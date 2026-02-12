@@ -1,0 +1,71 @@
+<div [class.dark]="darkMode">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">📚 BookMart</div>
+
+    <div class="search-bar">
+      <input type="text" [(ngModel)]="searchText" placeholder="Search books...">
+      <button>Search</button>
+    </div>
+
+    <div class="nav-right">
+
+      <div class="user-menu" (mouseenter)="showDropdown=true" (mouseleave)="showDropdown=false">
+        <div class="user-circle">👤</div>
+        <div class="dropdown" *ngIf="showDropdown">
+          <div *ngIf="isLoggedIn">
+            <p>Update Profile</p>
+            <p>My Address</p>
+            <p>Orders</p>
+            <p (click)="logout()" class="logout-btn">Logout</p>
+          </div>
+          <div *ngIf="!isLoggedIn">
+            <button class="dropdown-login-btn" (click)="login()">Login</button>
+          </div>
+        </div>
+      </div>
+
+      <button (click)="toggleTheme()">Switch Theme</button>
+      <button>🛒 Cart</button>
+    </div>
+  </nav>
+
+  <!-- BOOK GRID -->
+  <div class="grid">
+    <div class="book-card" *ngFor="let book of paginatedBooks">
+      <img [src]="book.image" alt="">
+      <h3>{{ book.title }}</h3>
+      <p>₹{{ book.price }}</p>
+      <button>Add to Cart</button>
+    </div>
+  </div>
+
+  <!-- PAGINATION -->
+  <div class="pagination">
+    <button (click)="changePage(currentPage - 1)">Prev</button>
+
+    <button 
+      *ngFor="let page of [].constructor(totalPages); let i = index"
+      (click)="changePage(i + 1)"
+      [class.active]="currentPage === i + 1">
+      {{ i + 1 }}
+    </button>
+
+    <button (click)="changePage(currentPage + 1)">Next</button>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="about">
+      <h4>About BookMart</h4>
+      <p>Your one-stop online bookstore with the best deals and latest books.</p>
+    </div>
+
+    <div class="tnc">
+      <h4>Terms & Conditions</h4>
+      <p>All purchases are subject to company policies and regulations.</p>
+    </div>
+  </footer>
+
+</div>

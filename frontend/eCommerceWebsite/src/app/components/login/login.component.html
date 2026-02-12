@@ -1,0 +1,45 @@
+<div class="background">
+  <div class="login-card">
+
+    <h2>Welcome Back</h2>
+
+    <!-- Role Selection -->
+    <div class="role-select">
+      <button 
+        [class.active]="selectedRole === 'admin'"
+        (click)="selectRole('admin')">
+        Admin
+      </button>
+
+      <button 
+        [class.active]="selectedRole === 'customer'"
+        (click)="selectRole('customer')">
+        Customer
+      </button>
+    </div>
+
+    <!-- Login Form -->
+    <form (ngSubmit)="login()">
+
+      <label>Username</label>
+      <input type="text" [(ngModel)]="username" name="username" required>
+
+      <label>Password</label>
+      <input type="password" [(ngModel)]="password" name="password" required>
+
+      <button type="submit" class="login-btn">
+        Login
+      </button>
+
+    </form>
+
+    <!-- Signup Button (Only for Customer) -->
+    <div *ngIf="selectedRole === 'customer'" class="signup-section">
+      <p>New here?</p>
+      <button type="button" class="signup-btn" (click)="goToSignup()">
+        Create Account
+      </button>
+    </div>
+
+  </div>
+</div>

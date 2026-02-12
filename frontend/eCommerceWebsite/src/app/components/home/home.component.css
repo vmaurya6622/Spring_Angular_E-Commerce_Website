@@ -1,0 +1,283 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* NAVBAR */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #FF0000 0%, #FFD700 33%, #0066FF 66%, #FF0000 100%);
+  color: white;
+  padding: 20px 30px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border-radius: 10px;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.search-bar {
+  display: flex;
+  width: 40%;
+  gap: 8px;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 12px 15px;
+  border: none;
+  outline: none;
+  border-radius: 25px;
+  font-size: 14px;
+}
+
+.search-bar button {
+  padding: 12px 25px;
+  background: orange;
+  border: none;
+  cursor: pointer;
+  border-radius: 25px;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.search-bar button:hover {
+  background: #ff9500;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-right button {
+  padding: 10px 20px;
+  cursor: pointer;
+  border: none;
+  border-radius: 25px;
+  background: #ff9900;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.nav-right button:hover {
+  background: #ff7700;
+  transform: scale(1.05);
+}
+
+/* DROPDOWN */
+.user-menu {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 10px;
+}
+
+.user-circle {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #ff9900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  margin-top: 8px;
+}
+
+.user-circle:hover {
+  transform: scale(1.1);
+  background: #ff7700;
+}
+
+.dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: white;
+  color: black;
+  padding: 15px;
+  width: 160px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  border-radius: 10px;
+  z-index: 100;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown p {
+  margin: 8px 0;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+.dropdown p:hover {
+  background: #f0f0f0;
+}
+
+.logout-btn {
+  background: #ff9900;
+  color: white !important;
+  font-weight: bold;
+}
+
+.logout-btn:hover {
+  background: #ff7700 !important;
+}
+
+.dropdown-login-btn {
+  width: 100%;
+  padding: 10px;
+  background: #ff9900;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.dropdown-login-btn:hover {
+  background: #ff7700;
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 25px;
+  padding: 30px 80px;
+}
+
+.book-card {
+  background: white;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.book-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+}
+
+.book-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 15px;
+  margin-bottom: 10px;
+}
+
+.book-card h3 {
+  margin: 8px 0 4px 0;
+  font-size: 14px;
+}
+
+.book-card p {
+  margin: 4px 0 10px 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ff9900;
+}
+
+.book-card button {
+  background: #ff9900;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 25px;
+  color: white;
+  font-weight: bold;
+  width: 100%;
+  transition: all 0.3s;
+  font-size: 12px;
+}
+
+.book-card button:hover {
+  background: #ff7700;
+  transform: scale(1.02);
+}
+
+/* PAGINATION */
+.pagination {
+  text-align: center;
+  margin: 30px;
+}
+
+.pagination button {
+  margin: 8px;
+  padding: 10px 15px;
+  cursor: pointer;
+  border: none;
+  border-radius: 20px;
+  background: #f0f0f0;
+  transition: all 0.3s;
+}
+
+.pagination button:hover {
+  transform: scale(1.1);
+}
+
+.pagination .active {
+  background: #ff9900;
+  color: white;
+}
+
+/* FOOTER */
+footer {
+  background: #232f3e;
+  color: white;
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+/* DARK MODE */
+.dark {
+  background: #121212;
+  color: white;
+}
+
+.dark .navbar {
+  background: #000;
+}
+
+.dark .book-card {
+  background: #1e1e1e;
+  color: white;
+}
+
+.dark .search-bar input {
+  background: #2a2a2a;
+  color: white;
+}
+
+.dark .search-bar input::placeholder {
+  color: #999;
+}
