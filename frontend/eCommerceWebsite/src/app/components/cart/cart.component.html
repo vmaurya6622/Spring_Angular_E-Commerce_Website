@@ -37,7 +37,7 @@
 
     <div *ngIf="cartItems.length === 0" class="empty-cart">
       <p>Your cart is empty</p>
-      <button class="continue-shopping">Continue Shopping</button>
+      <button class="continue-shopping" (click)="continueShopping()">Continue Shopping</button>
     </div>
 
     <div *ngIf="cartItems.length > 0" class="cart-content">
@@ -52,9 +52,9 @@
           </div>
 
           <div class="item-quantity">
-            <button (click)="decreaseQuantity(item.id)" class="qty-btn">-</button>
+            <button (click)="decreaseQuantity(item.id, item.quantity)" class="qty-btn">-</button>
             <input type="number" [(ngModel)]="item.quantity" class="qty-input" readonly>
-            <button (click)="increaseQuantity(item.id)" class="qty-btn">+</button>
+            <button (click)="increaseQuantity(item.id, item.quantity)" class="qty-btn">+</button>
           </div>
 
           <div class="item-total">

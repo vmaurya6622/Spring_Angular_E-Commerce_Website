@@ -11,9 +11,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-
   selectedRole: string = 'customer';
-
   username: string = '';
   password: string = '';
 
@@ -23,19 +21,21 @@ export class LoginComponent {
     this.selectedRole = role;
   }
 
-  login() {
-    console.log("Login as:", this.selectedRole);
-    console.log("Username:", this.username);
-    console.log("Password:", this.password);
-
-    if (this.selectedRole === 'admin') {
-      this.router.navigate(['/admin']);
-    } else {
-      this.router.navigate(['/shop']);
+  login(): void {
+    if (!this.username || !this.password) {
+      alert('Please enter username and password.');
+      return;
     }
+
+    if (this.username === 'admin' && this.password === 'admin123') {
+      this.router.navigate(['/products']);
+      return;
+    }
+
+    alert('Invalid username or password.');
   }
 
-  goToSignup() {
-    this.router.navigate(['/signup']);
+  goToSignup(): void {
+    alert('Signup is not implemented yet.');
   }
 }

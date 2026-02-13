@@ -3,7 +3,8 @@ package org.example.ecommercewebsite.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 @Entity
 @Data
 public class CartManager {
@@ -11,6 +12,6 @@ public class CartManager {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
-    private List<CartItems> items;
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<CartItems> items = new ArrayList<>();
 }

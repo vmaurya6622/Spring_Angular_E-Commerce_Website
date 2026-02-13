@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { CartService } from '../../services/cart.service';
+import { CartItem } from '../../models/cart-item.model';
 
-interface CartItem {
+interface CartItemView {
   id: number;
   title: string;
   price: number;
@@ -18,41 +20,30 @@ interface CartItem {
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.css']
 })
-export class CartComponent {
+export class CartComponent implements OnInit {
   searchText: string = '';
   darkMode: boolean = false;
   showDropdown: boolean = false;
   isLoggedIn: boolean = false;
   selectedCheckout: string = 'cod';
 
-  cartItems: CartItem[] = [
-    {
-      id: 1,
-      title: 'The Great Gatsby',
-      price: 350,
-      image: 'https://picsum.photos/200/300?random=1',
-      quantity: 2
-    },
-    {
-      id: 2,
-      title: 'To Kill a Mockingbird',
-      price: 299,
-      image: 'https://picsum.photos/200/300?random=2',
-      quantity: 1
-    },
-    {
-      id: 3,
-      title: '1984',
-      price: 450,
-      image: 'https://picsum.photos/200/300?random=3',
-      quantity: 3
-    }
-  ];
+  cartItems: CartItemView[] = [];
 
   shippingCost: number = 0;
 
+  constructor(private cartService: CartService, private router: Router) {}
+
+  ngOnInit(): void {
+    this.cartService.loadCart().subscribe(items => {
+      this.cartItems = items.map(item => this.mapItem(item));
+    });
+  }
+
   get subtotal(): number {
-    return this.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return this.cartItems.reduce(
+      (sum, item) => sum + (item.price * item.quantity),
+      0
+    );
   }
 
   get tax(): number {
@@ -63,22 +54,22 @@ export class CartComponent {
     return this.subtotal + this.tax + this.shippingCost;
   }
 
-  increaseQuantity(id: number) {
-    const item = this.cartItems.find(item => item.id === id);
-    if (item) {
-      item.quantity++;
-    }
+  increaseQuantity(id: number, currentQuantity: number) {
+    this.cartService.updateQuantity(id, currentQuantity + 1).subscribe(items => {
+      this.cartItems = items.map(item => this.mapItem(item));
+    });
   }
 
-  decreaseQuantity(id: number) {
-    const item = this.cartItems.find(item => item.id === id);
-    if (item && item.quantity > 1) {
-      item.quantity--;
-    }
+  decreaseQuantity(id: number, currentQuantity: number) {
+    this.cartService.updateQuantity(id, currentQuantity - 1).subscribe(items => {
+      this.cartItems = items.map(item => this.mapItem(item));
+    });
   }
 
   removeItem(id: number) {
-    this.cartItems = this.cartItems.filter(item => item.id !== id);
+    this.cartService.removeItem(id).subscribe(items => {
+      this.cartItems = items.map(item => this.mapItem(item));
+    });
   }
 
   checkout() {
@@ -122,11 +113,25 @@ export class CartComponent {
   }
 
   login() {
-    this.isLoggedIn = true;
+    this.router.navigate(['/login']);
   }
 
   logout() {
     this.isLoggedIn = false;
     this.showDropdown = false;
+  }
+
+  continueShopping(): void {
+    this.router.navigate(['/']);
+  }
+
+  private mapItem(item: CartItem): CartItemView {
+    return {
+      id: item.id,
+      title: item.product.name,
+      price: item.product.price,
+      image: item.product.imageUrl,
+      quantity: item.quantity
+    };
   }
 }

@@ -1,0 +1,39 @@
+<div class="page">
+	<nav class="navbar">
+		<div class="logo">🛍️ InstaKart</div>
+		<div class="nav-right">
+			<button routerLink="/">Home</button>
+			<button routerLink="/login">Login</button>
+			<button routerLink="/cart">🛒 Cart</button>
+		</div>
+	</nav>
+
+	<section class="hero">
+		<h1>Shop the Latest Arrivals</h1>
+		<p>Browse handpicked products and add them to your cart in one click.</p>
+	</section>
+
+	<div *ngIf="isLoading" class="status">Loading products...</div>
+	<div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+
+	<div class="grid" *ngIf="!isLoading && !errorMessage">
+		<app-product
+			*ngFor="let product of products"
+			[product]="product"
+			(addToCart)="onAddToCart($event)"
+			(viewDetails)="onViewDetails($event)"
+		></app-product>
+	</div>
+
+	<div class="pagination" *ngIf="totalPages > 1">
+		<button (click)="goToPage(page - 1)" [disabled]="page === 0">Prev</button>
+		<button
+			*ngFor="let i of [].constructor(totalPages); let index = index"
+			(click)="goToPage(index)"
+			[class.active]="page === index"
+		>
+			{{ index + 1 }}
+		</button>
+		<button (click)="goToPage(page + 1)" [disabled]="page + 1 >= totalPages">Next</button>
+	</div>
+</div>
