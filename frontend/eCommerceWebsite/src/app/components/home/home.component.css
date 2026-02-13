@@ -8,7 +8,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #FF0000 0%, #FFD700 33%, #0066FF 66%, #FF0000 100%);
+  background: linear-gradient(90deg, #ff0000 0%, #e5da9e 33%, #0066FF 66%, #f542c5 100%);
   color: white;
   padding: 20px 30px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);

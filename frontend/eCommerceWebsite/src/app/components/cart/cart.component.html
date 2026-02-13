@@ -1,0 +1,133 @@
+<div [class.dark]="darkMode">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">📚 BookMart</div>
+
+    <div class="search-bar">
+      <input type="text" [(ngModel)]="searchText" placeholder="Search books...">
+      <button>Search</button>
+    </div>
+
+    <div class="nav-right">
+
+      <div class="user-menu" (mouseenter)="showDropdown=true" (mouseleave)="showDropdown=false">
+        <div class="user-circle">👤</div>
+        <div class="dropdown" *ngIf="showDropdown">
+          <div *ngIf="isLoggedIn">
+            <p>Update Profile</p>
+            <p>My Address</p>
+            <p>Orders</p>
+            <p (click)="logout()" class="logout-btn">Logout</p>
+          </div>
+          <div *ngIf="!isLoggedIn">
+            <button class="dropdown-login-btn" (click)="login()">Login</button>
+          </div>
+        </div>
+      </div>
+
+      <button (click)="toggleTheme()">Switch Theme</button>
+      <button>🛒 Cart</button>
+    </div>
+  </nav>
+
+  <!-- CART CONTAINER -->
+  <div class="cart-container">
+    <h1 class="cart-title">🛒 Shopping Cart</h1>
+
+    <div *ngIf="cartItems.length === 0" class="empty-cart">
+      <p>Your cart is empty</p>
+      <button class="continue-shopping">Continue Shopping</button>
+    </div>
+
+    <div *ngIf="cartItems.length > 0" class="cart-content">
+      <!-- CART ITEMS -->
+      <div class="cart-items">
+        <div class="cart-item" *ngFor="let item of cartItems">
+          <img [src]="item.image" alt="{{ item.title }}" class="item-image">
+          
+          <div class="item-details">
+            <h3>{{ item.title }}</h3>
+            <p class="item-price">₹{{ item.price }}</p>
+          </div>
+
+          <div class="item-quantity">
+            <button (click)="decreaseQuantity(item.id)" class="qty-btn">-</button>
+            <input type="number" [(ngModel)]="item.quantity" class="qty-input" readonly>
+            <button (click)="increaseQuantity(item.id)" class="qty-btn">+</button>
+          </div>
+
+          <div class="item-total">
+            <p>₹{{ item.price * item.quantity }}</p>
+          </div>
+
+          <button (click)="removeItem(item.id)" class="remove-btn">Remove</button>
+        </div>
+      </div>
+
+      <!-- CHECKOUT SECTION -->
+      <div class="checkout-section">
+        <div class="price-summary">
+          <h3>Order Summary</h3>
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>₹{{ subtotal }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Shipping:</span>
+            <span class="shipping-cost">{{ shippingCost === 0 ? 'FREE' : '₹' + shippingCost }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Tax (10%):</span>
+            <span>₹{{ tax }}</span>
+          </div>
+          <div class="summary-row total">
+            <span>Total:</span>
+            <span>₹{{ total }}</span>
+          </div>
+        </div>
+
+        <div class="checkout-options">
+          <h3>Checkout Options</h3>
+          
+          <div class="checkout-method">
+            <input type="radio" id="cod" name="checkout" value="cod" [(ngModel)]="selectedCheckout">
+            <label for="cod">💵 Cash on Delivery</label>
+          </div>
+
+          <div class="checkout-method">
+            <input type="radio" id="card" name="checkout" value="card" [(ngModel)]="selectedCheckout">
+            <label for="card">💳 Debit/Credit Card</label>
+          </div>
+
+          <div class="checkout-method">
+            <input type="radio" id="upi" name="checkout" value="upi" [(ngModel)]="selectedCheckout">
+            <label for="upi">📱 UPI Payment</label>
+          </div>
+
+          <div class="checkout-method">
+            <input type="radio" id="wallet" name="checkout" value="wallet" [(ngModel)]="selectedCheckout">
+            <label for="wallet">🏦 Digital Wallet</label>
+          </div>
+        </div>
+
+        <button class="checkout-btn" (click)="checkout()">Proceed to Checkout</button>
+        <button class="continue-btn" routerLink="/">Continue Shopping</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="about">
+      <h4>About BookMart</h4>
+      <p>Your one-stop online bookstore with the best deals and latest books.</p>
+    </div>
+
+    <div class="tnc">
+      <h4>Terms & Conditions</h4>
+      <p>All purchases are subject to company policies and regulations.</p>
+    </div>
+  </footer>
+
+</div>
