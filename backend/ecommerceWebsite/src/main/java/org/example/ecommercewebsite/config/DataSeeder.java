@@ -6,9 +6,9 @@ import java.util.List;
 import org.example.ecommercewebsite.entities.Product;
 import org.example.ecommercewebsite.repositories.ProductRepo;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
+// import org.springframework.stereotype.Component;
 
-@Component
+// @Component
 public class DataSeeder implements CommandLineRunner {
     private final ProductRepo productRepo;
 
@@ -24,7 +24,7 @@ public class DataSeeder implements CommandLineRunner {
 
         List<Product> products = new ArrayList<>();
         addProduct(products, "Urban Backpack", "Lightweight backpack with laptop sleeve and waterproof coating.", 1499.00,
-            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab", 50);
+            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab", 0);
         addProduct(products, "Noise Canceling Headphones", "Over-ear headphones with 40h battery life and deep bass.", 4999.00,
             "https://images.unsplash.com/photo-1505740420928-5e560c06d30e", 40);
         addProduct(products, "Classic Sneakers", "Comfortable everyday sneakers with breathable mesh.", 2299.00,

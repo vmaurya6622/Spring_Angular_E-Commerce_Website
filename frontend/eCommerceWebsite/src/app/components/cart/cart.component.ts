@@ -11,6 +11,7 @@ interface CartItemView {
   price: number;
   image: string;
   quantity: number;
+  // stock: number;
 }
 
 @Component({

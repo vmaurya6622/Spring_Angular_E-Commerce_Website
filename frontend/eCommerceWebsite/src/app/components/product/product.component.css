@@ -5,6 +5,8 @@
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
 	text-align: center;
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	display: flex;
+	flex-direction: column;
 }
 
 .product-card:hover {
@@ -27,15 +29,79 @@ h3 {
 }
 
 .price {
-	margin: 0 0 12px;
+	margin: 0 0 8px;
 	font-weight: 700;
 	color: #ef6c00;
+}
+
+.rating {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 12px;
+	font-size: 14px;
+}
+
+.stars {
+	font-size: 16px;
+	color: #fbbf24;
+	letter-spacing: 0;
+}
+
+.rating-value {
+	color: #666;
+	font-weight: 600;
 }
 
 .actions {
 	display: flex;
 	gap: 10px;
 	justify-content: center;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+.stock-info {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 8px;
+	background: #f3f4f6;
+	font-size: 13px;
+}
+
+.stock-label {
+	color: #666;
+	font-weight: 600;
+}
+
+.stock-value {
+	background: #dbeafe;
+	color: #0369a1;
+	padding: 2px 8px;
+	border-radius: 4px;
+	font-weight: 700;
+	min-width: 30px;
+}
+
+.stock-value.low-stock {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+.out-of-stock-message {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 12px;
+	border-radius: 8px;
+	background: #fee2e2;
+	color: #991b1b;
+	font-weight: 700;
+	font-size: 14px;
+	margin-bottom: 10px;
 }
 
 button {
@@ -44,6 +110,7 @@ button {
 	border-radius: 10px;
 	cursor: pointer;
 	font-weight: 600;
+	flex: 1;
 }
 
 .primary {
@@ -58,6 +125,8 @@ button {
 .ghost {
 	background: #f3f4f6;
 	color: #111827;
+	width: 100%;
+	margin-top: auto;
 }
 
 .ghost:hover {

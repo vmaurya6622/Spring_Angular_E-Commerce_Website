@@ -10,6 +10,7 @@ interface Book {
   title: string;
   price: number;
   image: string;
+  stock: number;
 }
 
 @Component({
@@ -20,6 +21,7 @@ interface Book {
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
+
   searchText = '';
   currentPage = 1;
   itemsPerPage = 12;
@@ -79,12 +81,20 @@ export class HomeComponent implements OnInit {
     this.showDropdown = false;
   }
 
+  addToCart(book: Book): void {
+    if (book.stock > 0) {
+      alert(`${book.title} added to cart`);
+      book.stock--; // visually reduce stock
+    }
+  }
+
   private mapProduct(product: Product): Book {
     return {
       id: product.id,
       title: product.name,
       price: product.price,
-      image: product.imageUrl
+      image: product.imageUrl,
+      stock: product.stock
     };
   }
 }

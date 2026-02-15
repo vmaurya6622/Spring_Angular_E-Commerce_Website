@@ -21,4 +21,15 @@ export class ProductComponent {
 	onViewDetails(): void {
 		this.viewDetails.emit(this.product);
 	}
+
+	getRatingStars(rating: number): string {
+		const fullStars = Math.floor(rating);
+		const hasHalfStar = rating % 1 !== 0;
+		const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+		
+		let stars = '★'.repeat(fullStars);
+		if (hasHalfStar) stars += '½';
+		stars += '☆'.repeat(emptyStars);
+		return stars;
+	}
 }

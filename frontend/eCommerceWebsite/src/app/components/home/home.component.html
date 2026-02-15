@@ -37,9 +37,30 @@
       <img [src]="book.image" alt="">
       <h3>{{ book.title }}</h3>
       <p>₹{{ book.price }}</p>
-      <button>Add to Cart</button>
+
+      <!-- STOCK LOGIC -->
+      <div *ngIf="book.stock > 0; else outOfStockBlock">
+
+        <p class="stock-info"
+          [ngClass]="{'low-stock': book.stock <= 2}">
+          Only {{ book.stock }} left
+        </p>
+
+        <button (click)="addToCart(book)">
+          Add to Cart
+        </button>
+
+      </div>
+
+      <ng-template #outOfStockBlock>
+        <p class="out-of-stock">
+          ❌ Out of Stock
+        </p>
+      </ng-template>
+
     </div>
   </div>
+
 
   <!-- PAGINATION -->
   <div class="pagination">

@@ -281,3 +281,19 @@ footer {
 .dark .search-bar input::placeholder {
   color: #999;
 }
+.stock-info {
+  font-size: 12px;
+  color: green;
+  margin-bottom: 6px;
+}
+
+.low-stock {
+  color: orange;
+  font-weight: bold;
+}
+
+.out-of-stock {
+  font-weight: bold;
+  color: red;
+  margin-top: 10px;
+}
