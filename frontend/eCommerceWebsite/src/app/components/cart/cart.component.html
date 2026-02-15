@@ -39,16 +39,16 @@
   <div class="cart-container">
     <h1 class="cart-title">🛒 Shopping Cart</h1>
 
-    <div *ngIf="isLoading" class="loading">
-      <p>Loading your cart...</p>
-    </div>
-
-    <div *ngIf="!isLoading && cartItems.length === 0" class="empty-cart">
+    <div *ngIf="cartItems.length === 0 && !isLoading" class="empty-cart">
       <p>Your cart is empty</p>
       <button class="continue-shopping" (click)="continueShopping()">Continue Shopping</button>
     </div>
 
-    <div *ngIf="!isLoading && cartItems.length > 0" class="cart-content">
+    <div *ngIf="isLoading && cartItems.length === 0" class="loading">
+      <p>Loading cart items...</p>
+    </div>
+
+    <div *ngIf="cartItems.length > 0" class="cart-content">
       <!-- CART ITEMS -->
       <div class="cart-items">
         <div class="cart-item" *ngFor="let item of cartItems">
@@ -57,12 +57,22 @@
           <div class="item-details">
             <h3>{{ item.title }}</h3>
             <p class="item-price">₹{{ item.price }}</p>
+            <p class="stock-info" 
+               [class.max-stock]="item.quantity >= item.stock"
+               [class.low-stock]="item.stock <= 2 && item.quantity < item.stock">
+              <span *ngIf="item.quantity >= item.stock">⚠️ Max stock in cart</span>
+              <span *ngIf="item.quantity < item.stock && item.stock <= 2">Only {{ item.stock - item.quantity }} more available</span>
+              <span *ngIf="item.quantity < item.stock && item.stock > 2">{{ item.stock }} available</span>
+            </p>
           </div>
 
           <div class="item-quantity">
             <button (click)="decreaseQuantity(item.id, item.quantity)" class="qty-btn">-</button>
             <input type="number" [(ngModel)]="item.quantity" class="qty-input" readonly>
-            <button (click)="increaseQuantity(item.id, item.quantity)" class="qty-btn">+</button>
+            <button (click)="increaseQuantity(item.id, item.quantity)" 
+                    class="qty-btn" 
+                    [disabled]="item.quantity >= item.stock"
+                    [class.disabled]="item.quantity >= item.stock">+</button>
           </div>
 
           <div class="item-total">

@@ -28,13 +28,16 @@ public class OrderService {
 
     @Transactional
     public Order checkout(Long customerId, String paymentMethod, Double shippingCost) {
+        System.out.println("Checkout started for customer ID: " + customerId);
         // Get customer
         Customer customer = customerRepo.findById(customerId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
+        System.out.println("Customer found: " + customer.getName());
 
         // Get customer's cart
         CartManager cart = cartRepo.findByCustomer(customer)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found"));
+        System.out.println("Cart found with " + cart.getItems().size() + " items");
 
         if (cart.getItems().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
@@ -82,19 +85,29 @@ public class OrderService {
 
         // Save order
         Order savedOrder = orderRepo.save(order);
+        System.out.println("Order saved with ID: " + savedOrder.getId());
+        System.out.println("Order has " + savedOrder.getItems().size() + " items");
 
         // Clear cart
         cartItemRepo.deleteAll(cart.getItems());
         cart.getItems().clear();
         cartRepo.save(cart);
+        System.out.println("Cart cleared");
 
         return savedOrder;
     }
 
     public List<Order> getCustomerOrders(Long customerId) {
+        System.out.println("Fetching orders for customer ID: " + customerId);
         Customer customer = customerRepo.findById(customerId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
-        return orderRepo.findByCustomerOrderByOrderDateDesc(customer);
+        System.out.println("Customer found: " + customer.getName());
+        List<Order> orders = orderRepo.findByCustomerWithItemsAndProducts(customer);
+        System.out.println("Found " + orders.size() + " orders for customer " + customer.getName());
+        for (Order order : orders) {
+            System.out.println("Order ID: " + order.getId() + ", Items: " + order.getItems().size() + ", Total: " + order.getTotal());
+        }
+        return orders;
     }
 
     public Order getOrderById(Long orderId) {

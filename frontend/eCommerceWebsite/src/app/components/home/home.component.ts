@@ -1,4 +1,4 @@
-import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -32,11 +32,13 @@ export class HomeComponent implements OnInit {
   isLoggedIn = false;
   customerName = '';
   books: Book[] = [];
+  productsInCart: Set<number> = new Set();
 
   constructor(
     private productService: ProductService,
     private cartService: CartService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -48,10 +50,25 @@ export class HomeComponent implements OnInit {
         const customer = JSON.parse(customerData);
         this.isLoggedIn = true;
         this.customerName = customer.name || 'User';
+        this.loadCartItems();
       }
     }
 
     this.loadProducts();
+  }
+
+  loadCartItems(): void {
+    this.cartService.loadCart().subscribe({
+      next: (items) => {
+        // Mark all products that are in the cart
+        items.forEach(item => {
+          this.productsInCart.add(item.product.id);
+        });
+      },
+      error: (err) => {
+        console.error('Error loading cart items:', err);
+      }
+    });
   }
 
   loadProducts(): void {
@@ -132,16 +149,59 @@ export class HomeComponent implements OnInit {
         return;
       }
 
-      this.cartService.addItem(book.id, 1).subscribe({
-        next: () => {
-          alert(`${book.title} added to cart successfully!`);
+      // First check current cart quantity for this product
+      this.cartService.loadCart().subscribe({
+        next: (cartItems) => {
+          const existingItem = cartItems.find(item => item.product.id === book.id);
+          const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
+          
+          if (currentQuantityInCart >= book.stock) {
+            alert(`Cannot add more! Only ${book.stock} items available in stock. You already have ${currentQuantityInCart} in your cart.`);
+            return;
+          }
+
+          // Proceed with adding to cart
+          this.cartService.addItem(book.id, 1).subscribe({
+            next: () => {
+              console.log('Adding product to cart Set:', book.id);
+              // Create new Set instance to trigger change detection
+              this.productsInCart = new Set(this.productsInCart).add(book.id);
+              console.log('Products in cart:', Array.from(this.productsInCart));
+              // Manually trigger change detection
+              this.cdr.detectChanges();
+              alert(`${book.title} added to cart successfully!`);
+            },
+            error: (err) => {
+              console.error('Error adding to cart:', err);
+              const errorMessage = err.error?.message || err.message || 'Failed to add item to cart. Please try again.';
+              alert(errorMessage);
+            }
+          });
         },
         error: (err) => {
-          console.error('Error adding to cart:', err);
-          alert('Failed to add item to cart. Please try again.');
+          console.error('Error checking cart:', err);
+          // If cart check fails, try adding anyway
+          this.cartService.addItem(book.id, 1).subscribe({
+            next: () => {
+              this.productsInCart = new Set(this.productsInCart).add(book.id);
+              this.cdr.detectChanges();
+              alert(`${book.title} added to cart successfully!`);
+            },
+            error: (err) => {
+              console.error('Error adding to cart:', err);
+              const errorMessage = err.error?.message || err.message || 'Failed to add item to cart. Please try again.';
+              alert(errorMessage);
+            }
+          });
         }
       });
     }
+  }
+
+  isInCart(bookId: number): boolean {
+    const inCart = this.productsInCart.has(bookId);
+    console.log(`Checking if book ${bookId} is in cart:`, inCart);
+    return inCart;
   }
 
   private mapProduct(product: Product): Book {

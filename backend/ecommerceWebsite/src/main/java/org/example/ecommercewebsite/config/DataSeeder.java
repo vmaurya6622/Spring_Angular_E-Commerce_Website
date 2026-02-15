@@ -6,9 +6,9 @@ import java.util.List;
 import org.example.ecommercewebsite.entities.Product;
 import org.example.ecommercewebsite.repositories.ProductRepo;
 import org.springframework.boot.CommandLineRunner;
-// import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Component;
 
-// @Component
+@Component
 public class DataSeeder implements CommandLineRunner {
     private final ProductRepo productRepo;
 

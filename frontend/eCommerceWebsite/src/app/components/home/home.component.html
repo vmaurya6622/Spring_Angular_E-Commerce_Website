@@ -40,6 +40,9 @@
   <!-- BOOK GRID -->
   <div class="grid">
     <div class="book-card" *ngFor="let book of paginatedBooks">
+      <div class="cart-indicator" *ngIf="isInCart(book.id)">
+        <span class="checkmark">✓</span>
+      </div>
       <img [src]="book.image" alt="">
       <h3>{{ book.title }}</h3>
       <p>₹{{ book.price }}</p>

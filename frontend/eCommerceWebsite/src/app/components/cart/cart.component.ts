@@ -13,6 +13,8 @@ interface CartItemView {
   price: number;
   image: string;
   quantity: number;
+  stock: number;
+  productId: number;
 }
 
 @Component({
@@ -86,8 +88,22 @@ export class CartComponent implements OnInit {
   }
 
   increaseQuantity(id: number, currentQuantity: number) {
-    this.cartService.updateQuantity(id, currentQuantity + 1).subscribe(items => {
-      this.cartItems = items.map(item => this.mapItem(item));
+    const item = this.cartItems.find(i => i.id === id);
+    if (item && currentQuantity >= item.stock) {
+      alert(`Cannot add more! Only ${item.stock} items available in stock.`);
+      return;
+    }
+    this.cartService.updateQuantity(id, currentQuantity + 1).subscribe({
+      next: (items) => {
+        this.cartItems = items.map(item => this.mapItem(item));
+      },
+      error: (err) => {
+        console.error('Error updating quantity:', err);
+        const errorMessage = err.error?.message || err.message || 'Failed to update quantity';
+        alert(errorMessage);
+        // Reload cart to sync with server state
+        this.loadCart();
+      }
     });
   }
 
@@ -127,9 +143,15 @@ export class CartComponent implements OnInit {
       shippingCost: this.shippingCost
     };
 
+    console.log('Sending checkout request:', checkoutRequest);
     this.http.post('http://localhost:8080/api/orders/checkout', checkoutRequest)
       .subscribe({
         next: (order: any) => {
+          console.log('=== CHECKOUT SUCCESS ==');
+          console.log('Order created successfully:', order);
+          console.log('Order ID:', order.id);
+          console.log('Order Items:', order.items);
+          console.log('Customer ID from localStorage:', customer.id);
           const checkoutInfo = `
       Checkout Successful!
       ==================
@@ -147,10 +169,17 @@ export class CartComponent implements OnInit {
           `;
           alert(checkoutInfo);
           this.cartItems = [];
-          this.router.navigate(['/orders']);
+          console.log('Navigating to orders page with refresh');
+          // Navigate directly to orders page
+          this.router.navigate(['/orders']).then(() => {
+            console.log('Navigation to orders complete');
+            // Force page reload to ensure fresh data
+            window.location.href = '/orders';
+          });
         },
         error: (err) => {
           console.error('Checkout error:', err);
+          console.error('Error details:', err.error);
           alert(err.error.message || 'Checkout failed. Please try again.');
         }
       });
@@ -210,7 +239,9 @@ export class CartComponent implements OnInit {
       title: item.product.name,
       price: item.product.price,
       image: item.product.imageUrl,
-      quantity: item.quantity
+      quantity: item.quantity,
+      stock: item.product.stock,
+      productId: item.product.id
     };
   }
 }

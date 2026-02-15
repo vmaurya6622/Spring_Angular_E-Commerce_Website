@@ -32,7 +32,7 @@ public class CartService {
 		Customer customer = customerRepo.findById(customerId)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
 		
-		Optional<CartManager> existingCart = cartRepo.findByCustomer(customer);
+		Optional<CartManager> existingCart = cartRepo.findByCustomerWithItems(customer);
 		if (existingCart.isPresent()) {
 			return existingCart.get();
 		}
@@ -58,9 +58,21 @@ public class CartService {
 			.orElse(null);
 
 		if (existingItem != null) {
-			existingItem.setQuantity(existingItem.getQuantity() + quantity);
+			int newQuantity = existingItem.getQuantity() + quantity;
+			if (newQuantity > product.getStock()) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+					"Cannot add more items. Only " + product.getStock() + " available in stock. You already have " 
+					+ existingItem.getQuantity() + " in your cart.");
+			}
+			existingItem.setQuantity(newQuantity);
 			cartItemRepo.save(existingItem);
 			return cart;
+		}
+
+		// Check stock for new item
+		if (quantity > product.getStock()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+				"Cannot add " + quantity + " items. Only " + product.getStock() + " available in stock.");
 		}
 
 		CartItems newItem = new CartItems();
@@ -79,6 +91,13 @@ public class CartService {
 		if (quantity <= 0) {
 			cartItemRepo.delete(item);
 			return getOrCreateCartForCustomer(customerId);
+		}
+
+		// Validate stock before updating
+		Product product = item.getProduct();
+		if (quantity > product.getStock()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+				"Cannot update quantity. Only " + product.getStock() + " available in stock.");
 		}
 
 		item.setQuantity(quantity);
