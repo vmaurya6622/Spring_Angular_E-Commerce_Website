@@ -2,12 +2,16 @@
 
   <!-- NAVBAR -->
   <nav class="navbar">
-    <div class="logo">📚 BookMart</div>
+    <div class="logo" (click)="goToHome()" style="cursor: pointer;">
+      <img src="assets/logo.png" alt="InstaKart Logo">
+    </div>
 
     <div class="search-bar">
       <input type="text" [(ngModel)]="searchText" placeholder="Search books...">
       <button>Search</button>
     </div>
+
+    <div class="greeting" *ngIf="isLoggedIn">Hi, {{ customerName }}! 👋</div>
 
     <div class="nav-right">
 
@@ -15,9 +19,9 @@
         <div class="user-circle">👤</div>
         <div class="dropdown" *ngIf="showDropdown">
           <div *ngIf="isLoggedIn">
-            <p>Update Profile</p>
-            <p>My Address</p>
-            <p>Orders</p>
+            <p (click)="navigateToProfile()" class="menu-item">Update Profile</p>
+            <p (click)="navigateToAddress()" class="menu-item">My Address</p>
+            <p (click)="navigateToOrders()" class="menu-item">Orders</p>
             <p (click)="logout()" class="logout-btn">Logout</p>
           </div>
           <div *ngIf="!isLoggedIn">
@@ -35,12 +39,16 @@
   <div class="cart-container">
     <h1 class="cart-title">🛒 Shopping Cart</h1>
 
-    <div *ngIf="cartItems.length === 0" class="empty-cart">
+    <div *ngIf="isLoading" class="loading">
+      <p>Loading your cart...</p>
+    </div>
+
+    <div *ngIf="!isLoading && cartItems.length === 0" class="empty-cart">
       <p>Your cart is empty</p>
       <button class="continue-shopping" (click)="continueShopping()">Continue Shopping</button>
     </div>
 
-    <div *ngIf="cartItems.length > 0" class="cart-content">
+    <div *ngIf="!isLoading && cartItems.length > 0" class="cart-content">
       <!-- CART ITEMS -->
       <div class="cart-items">
         <div class="cart-item" *ngFor="let item of cartItems">

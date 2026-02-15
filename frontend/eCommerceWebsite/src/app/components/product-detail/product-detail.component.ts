@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { Product } from '../../models/product.model';
@@ -19,6 +19,7 @@ export class ProductDetailComponent implements OnInit {
 
 	constructor(
 		private route: ActivatedRoute,
+		private router: Router,
 		private productService: ProductService,
 		private cartService: CartService
 	) {}
@@ -49,5 +50,9 @@ export class ProductDetailComponent implements OnInit {
 			return;
 		}
 		this.cartService.addItem(this.product.id, 1).subscribe();
+	}
+
+	goToHome(): void {
+		this.router.navigate(['/']);
 	}
 }

@@ -1,6 +1,8 @@
 <div class="page">
 	<nav class="navbar">
-		<div class="logo">🛍️ InstaKart</div>
+		<div class="logo" (click)="goToHome()" style="cursor: pointer;">
+			<img src="assets/logo.png" alt="InstaKart Logo">
+		</div>
 		<div class="nav-right">
 			<button routerLink="/">Home</button>
 			<button routerLink="/login">Login</button>

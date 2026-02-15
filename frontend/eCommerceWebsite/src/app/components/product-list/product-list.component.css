@@ -17,8 +17,28 @@
 }
 
 .logo {
+	display: flex;
+	align-items: center;
+	gap: 10px;
 	font-size: 22px;
 	font-weight: 700;
+	cursor: pointer;
+	padding: 5px 10px;
+}
+
+.logo img {
+	height: 60px;
+	width: auto;
+	border-radius: 12px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	transition: transform 0.3s ease;
+	object-fit: contain;
+	background: rgba(255, 255, 255, 0.1);
+	padding: 4px;
+}
+
+.logo img:hover {
+	transform: scale(1.05);
 }
 
 .nav-right {

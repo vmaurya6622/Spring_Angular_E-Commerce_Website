@@ -1,14 +1,14 @@
 
 INSERT INTO products (name, description, price, image_url, stock, rating) VALUES
-('Urban Backpack', 'Lightweight backpack with laptop sleeve and waterproof coating.', 1499.00, 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab', 3, 4.5),
+('Urban Backpack', 'Lightweight backpack with laptop sleeve and waterproof coating.', 1499.00, 'https://urbanwolfstore.com/cdn/shop/files/1_a29def20-6ba2-47f9-9343-c6e63a8bac4b.jpg?v=1692709067', 3, 4.5),
 ('Noise Canceling Headphones', 'Over-ear headphones with 40h battery life and deep bass.', 4999.00, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e', 0, 4.8),
-('Classic Sneakers', 'Comfortable everyday sneakers with breathable mesh.', 2299.00, 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77', 5, 4.3),
+('Classic Sneakers', 'Comfortable everyday sneakers with breathable mesh.', 2299.00, 'https://images.opumo.com/wordpress/wp-content/uploads/2022/07/opumo-banner-30.jpg', 5, 4.3),
 ('Smart Watch', 'Fitness tracking, heart rate monitor, and sleep analytics.', 6999.00, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9', 0, 4.7),
 ('Minimal Desk Lamp', 'Warm LED desk lamp with adjustable brightness.', 1199.00, 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4', 2, 4.4),
 ('Travel Mug', 'Insulated stainless steel mug keeps drinks hot for 6 hours.', 799.00, 'https://images.unsplash.com/photo-1517705008128-361805f42e86', 4, 4.6),
 ('Bluetooth Speaker', 'Portable speaker with punchy sound and IPX7 rating.', 2599.00, 'https://images.unsplash.com/photo-1512446816042-444d641267d4', 3, 4.5),
 ('Leather Wallet', 'Slim wallet with RFID protection and 6 card slots.', 999.00, 'https://images.unsplash.com/photo-1518544801976-3e159e50e5bb', 6, 4.2),
-('Sports Water Bottle', 'BPA-free bottle with leakproof lid.', 499.00, 'https://images.unsplash.com/photo-1526401485004-2aa7b1d276b4', 1, 4.4),
+('Sports Water Bottle', 'BPA-free bottle with leakproof lid.', 499.00, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_750,h_750/global/055051/01/fnd/IND/fmt/png/Training-Sportstyle-Training-Spill-Proof-Waterbottle', 1, 4.4),
 ('Wireless Mouse', 'Ergonomic mouse with silent clicks.', 699.00, 'https://images.unsplash.com/photo-1527814050087-3793815479db', 7, 4.3),
 ('Mechanical Keyboard', 'RGB keyboard with tactile switches.', 3499.00, 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8', 0, 4.9),
 ('Desk Organizer', 'Minimal organizer for pens and notes.', 549.00, 'https://images.unsplash.com/photo-1519681393784-d120267933ba', 3, 4.1),
@@ -54,3 +54,10 @@ INSERT INTO products (name, description, price, image_url, stock, rating) VALUES
 ('Noise Isolation Earplugs', 'Reusable earplugs with case.', 399.00, 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f', 4, 4.3),
 ('Travel Adapter', 'Universal adapter with USB ports.', 1299.00, 'https://images.unsplash.com/photo-1518770660439-4636190af475', 1, 4.5),
 ('Premium Pen', 'Metal body pen with smooth ink.', 599.00, 'https://images.unsplash.com/photo-1519681393784-d120267933ba', 6, 4.4);
+
+-- Insert Sample Customers
+INSERT INTO customers (name, age, sex, date_of_birth, mobile, address, username, password, email) VALUES
+('Rahul Sharma', 28, 'Male', '1998-03-15', '9876543210', '123 MG Road, Delhi, India', 'rahul_sharma', 'pass123', 'rahul.sharma@email.com'),
+('Priya Patel', 25, 'Female', '2001-07-22', '8765432109', '456 Park Street, Mumbai, India', 'priya_p', 'priya@456', 'priya.patel@email.com'),
+('Amit Kumar', 32, 'Male', '1994-11-10', '7654321098', '789 Brigade Road, Bangalore, India', 'amit_k', 'amit2024', 'amit.kumar@email.com'),
+('Sneha Reddy', 24, 'Female', '2002-05-18', '6543210987', '321 Anna Salai, Chennai, India', 'sneha_reddy', 'sneha@789', 'sneha.reddy@email.com');

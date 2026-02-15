@@ -16,8 +16,28 @@ body {
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 22px;
   font-weight: bold;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+
+.logo img {
+  height: 60px;
+  width: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px;
+}
+
+.logo img:hover {
+  transform: scale(1.05);
 }
 
 .search-bar {
@@ -69,6 +89,31 @@ body {
 .nav-right button:hover {
   background: #ff7700;
   transform: scale(1.05);
+}
+
+.greeting {
+  font-size: 16px;
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 8px 16px;
+  border-radius: 20px;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.greeting:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.menu-item {
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+}
+
+.menu-item:hover {
+  background: #f0f0f0;
 }
 
 /* DROPDOWN */
@@ -174,6 +219,25 @@ body {
   font-size: 32px;
   margin-bottom: 30px;
   color: #333;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.loading p {
+  font-size: 18px;
+  color: #666;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 .empty-cart {

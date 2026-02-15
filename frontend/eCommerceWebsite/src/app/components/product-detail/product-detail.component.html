@@ -1,6 +1,8 @@
 <div class="detail-page">
 	<nav class="navbar">
-		<div class="logo">🛍️ InstaKart</div>
+		<div class="logo" (click)="goToHome()" style="cursor: pointer;">
+			<img src="assets/logo.png" alt="InstaKart Logo">
+		</div>
 		<div class="nav-right">
 			<button routerLink="/products">Back to Products</button>
 			<button routerLink="/cart">🛒 Cart</button>

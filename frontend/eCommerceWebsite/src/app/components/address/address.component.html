@@ -1,0 +1,77 @@
+<div class="address-container">
+  <header class="header">
+    <button class="back-btn" (click)="goBack()">← Back</button>
+    <h1>My Addresses</h1>
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </header>
+
+  <div class="message-box" *ngIf="messageBox" [ngClass]="messageBox.type">
+    {{ messageBox.message }}
+  </div>
+
+  <div class="content">
+    <div *ngIf="customer" class="addresses-wrapper">
+      <div class="section-header">
+        <h2>📍 Saved Addresses</h2>
+        <button class="add-btn" (click)="startAddAddress()" *ngIf="!isAdding">
+          + Add New Address
+        </button>
+      </div>
+
+      <div class="add-address-form" *ngIf="isAdding">
+        <h3>Add New Address</h3>
+        <textarea
+          [(ngModel)]="newAddress"
+          placeholder="Enter your full address (street, city, state, postal code)"
+          rows="4"
+          class="address-input"
+        ></textarea>
+        <div class="form-buttons">
+          <button class="save-btn" (click)="addAddress()" [disabled]="isSaving">
+            {{ isSaving ? 'Adding...' : 'Add Address' }}
+          </button>
+          <button class="cancel-btn" (click)="cancelAddAddress()" [disabled]="isSaving">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <div class="addresses-list" *ngIf="addresses.length > 0">
+        <div
+          class="address-card"
+          *ngFor="let address of addresses; let i = index"
+          [class.default]="customer.address === address"
+        >
+          <div class="address-content">
+            <div class="address-text">{{ address }}</div>
+            <div *ngIf="customer.address === address" class="default-badge">
+              ✓ Default Address
+            </div>
+          </div>
+          <div class="address-actions">
+            <button
+              class="select-btn"
+              (click)="selectAddress(address)"
+              *ngIf="customer.address !== address"
+            >
+              Set as Default
+            </button>
+            <button class="delete-btn" (click)="deleteAddress(i)">
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="addresses.length === 0">
+        <p>No addresses saved yet.</p>
+        <p class="sub-text">Start by adding your first address</p>
+      </div>
+    </div>
+
+    <div *ngIf="!customer" class="no-data">
+      <p>Please login to manage your addresses.</p>
+      <button (click)="router.navigate(['/login'])" class="login-btn">Go to Login</button>
+    </div>
+  </div>
+</div>

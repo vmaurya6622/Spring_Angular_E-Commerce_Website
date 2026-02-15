@@ -1,0 +1,138 @@
+<div class="orders-container">
+  <header class="header">
+    <button class="back-btn" (click)="goBack()">← Back</button>
+    <h1>My Orders</h1>
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </header>
+
+  <div class="content">
+    <div *ngIf="customer && orders.length > 0" class="orders-wrapper">
+      <div class="order-stats">
+        <div class="stat-card">
+          <div class="stat-number">{{ orders.length }}</div>
+          <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{ getFirstOrderItemCount() }}</div>
+          <div class="stat-label">Recent Items</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">
+            ₹{{ getTotalSpent() }}
+          </div>
+          <div class="stat-label">Total Spent</div>
+        </div>
+      </div>
+
+      <div class="orders-list">
+        <div
+          class="order-card"
+          *ngFor="let order of orders"
+          [class.expanded]="expandedOrderId === order.id"
+        >
+          <div class="order-header" (click)="toggleOrderDetails(order.id)">
+            <div class="order-info">
+              <div class="order-id">Order #{{ order.id }}</div>
+              <div class="order-date">{{ order.orderDate | date: 'MMM dd, yyyy' }}</div>
+            </div>
+            <div class="order-summary">
+              <div class="item-count">{{ order.items.length }} item(s)</div>
+              <div class="order-total">₹{{ order.total }}</div>
+            </div>
+            <div class="order-status" [ngClass]="getStatusColor(order.status)">
+              {{ getStatusIcon(order.status) }} {{ order.status | uppercase }}
+            </div>
+            <div class="expand-icon">
+              {{ expandedOrderId === order.id ? '▼' : '▶' }}
+            </div>
+          </div>
+
+          <div class="order-details" *ngIf="expandedOrderId === order.id">
+            <div class="order-items">
+              <h3>Order Items</h3>
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th class="text-right">Unit Price</th>
+                    <th class="text-right">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of order.items">
+                    <td>{{ item.productName }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td class="text-right">₹{{ item.price }}</td>
+                    <td class="text-right">₹{{ item.subtotal }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="order-summary-section">
+              <h3>Order Summary</h3>
+              <div class="summary-grid">
+                <div class="summary-row">
+                  <span class="label">Subtotal:</span>
+                  <span class="value">₹{{ order.subtotal }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="label">GST (10%):</span>
+                  <span class="value">₹{{ order.tax }}</span>
+                </div>
+                <div class="summary-row total">
+                  <span class="label">Total Amount:</span>
+                  <span class="value">₹{{ order.total }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="order-timeline">
+              <h3>Order Status</h3>
+              <div class="timeline">
+                <div class="timeline-item" [class.active]="order.status === 'pending'">
+                  <div class="timeline-dot">1</div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">Order Confirmed</div>
+                    <div class="timeline-date">{{ order.orderDate | date: 'MMM dd, yyyy' }}</div>
+                  </div>
+                </div>
+                <div class="timeline-item" [class.active]="['shipped', 'delivered'].includes(order.status)">
+                  <div class="timeline-dot">2</div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">Order Shipped</div>
+                    <div class="timeline-date">In Transit</div>
+                  </div>
+                </div>
+                <div class="timeline-item" [class.active]="order.status === 'delivered'">
+                  <div class="timeline-dot">3</div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">Order Delivered</div>
+                    <div class="timeline-date">
+                      {{ order.status === 'delivered' ? 'Delivered' : 'Pending' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="customer && orders.length === 0" class="empty-state">
+      <div class="empty-icon">📦</div>
+      <p>You haven't placed any orders yet</p>
+      <p class="sub-text">Start shopping to see your orders here</p>
+      <button class="continue-shopping-btn" (click)="goBack()">
+        Continue Shopping
+      </button>
+    </div>
+
+    <div *ngIf="!customer" class="no-data">
+      <p>Please login to view your orders.</p>
+      <button (click)="router.navigate(['/login'])" class="login-btn">Go to Login</button>
+    </div>
+  </div>
+</div>

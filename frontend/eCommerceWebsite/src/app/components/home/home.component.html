@@ -2,11 +2,17 @@
 
   <!-- NAVBAR -->
   <nav class="navbar">
-    <div class="logo">📚 InstaKart</div>
+    <div class="logo" (click)="goToHome()" style="cursor: pointer;">
+      <img src="assets/logo.png" alt="InstaKart Logo">
+    </div>
 
     <div class="search-bar">
       <input type="text" [(ngModel)]="searchText" placeholder="Search books...">
       <button>Search</button>
+    </div>
+
+    <div class="greeting" *ngIf="isLoggedIn">
+      <span>Hi, {{ customerName }}! 👋</span>
     </div>
 
     <div class="nav-right">
@@ -15,9 +21,9 @@
         <div class="user-circle">👤</div>
         <div class="dropdown" *ngIf="showDropdown">
           <div *ngIf="isLoggedIn">
-            <p>Update Profile</p>
-            <p>My Address</p>
-            <p>Orders</p>
+            <p (click)="navigateToProfile()" class="menu-item">Update Profile</p>
+            <p (click)="navigateToAddress()" class="menu-item">My Address</p>
+            <p (click)="navigateToOrders()" class="menu-item">Orders</p>
             <p (click)="logout()" class="logout-btn">Logout</p>
           </div>
           <div *ngIf="!isLoggedIn">

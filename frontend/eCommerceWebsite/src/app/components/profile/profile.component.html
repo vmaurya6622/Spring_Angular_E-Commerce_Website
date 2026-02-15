@@ -1,0 +1,172 @@
+<div class="profile-container">
+  <header class="header">
+    <button class="back-btn" (click)="goBack()">← Back</button>
+    <h1>My Profile</h1>
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </header>
+
+  <div class="message-box" *ngIf="messageBox" [ngClass]="messageBox.type">
+    {{ messageBox.message }}
+  </div>
+
+  <div class="profile-card" *ngIf="customer">
+    <div class="card-header">
+      <div class="avatar">👤</div>
+      <div class="user-info">
+        <h2>{{ customer.name }}</h2>
+        <p>@{{ customer.username }}</p>
+      </div>
+      <button class="edit-btn" (click)="startEdit()" *ngIf="!isEditing">✏️ Edit Profile</button>
+    </div>
+
+    <div class="profile-content">
+      <div *ngIf="!isEditing" class="view-mode">
+        <div class="info-section">
+          <h3>Contact Information</h3>
+          <div class="info-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ customer.email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Mobile:</span>
+            <span class="value">{{ customer.mobile }}</span>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h3>Personal Information</h3>
+          <div class="info-row">
+            <span class="label">Name:</span>
+            <span class="value">{{ customer.name }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Date of Birth:</span>
+            <span class="value">{{ customer.dob | date: 'MMM dd, yyyy' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Age:</span>
+            <span class="value">{{ customer.age }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Gender:</span>
+            <span class="value">{{ customer.sex }}</span>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h3>Address</h3>
+          <div class="info-row">
+            <span class="label">Address:</span>
+            <span class="value">{{ customer.address }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="isEditing" class="edit-mode">
+        <form (ngSubmit)="saveProfile()">
+          <div class="form-section">
+            <h3>Edit Profile</h3>
+            
+            <div class="form-group">
+              <label for="name">Name:</label>
+              <input 
+                type="text" 
+                id="name" 
+                [(ngModel)]="customer.name" 
+                name="name" 
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input 
+                type="email" 
+                id="email" 
+                [(ngModel)]="customer.email" 
+                name="email" 
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="mobile">Mobile:</label>
+              <input 
+                type="tel" 
+                id="mobile" 
+                [(ngModel)]="customer.mobile" 
+                name="mobile" 
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="dob">Date of Birth:</label>
+              <input 
+                type="date" 
+                id="dob" 
+                [(ngModel)]="customer.dob" 
+                name="dob" 
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="age">Age:</label>
+              <input 
+                type="number" 
+                id="age" 
+                [(ngModel)]="customer.age" 
+                name="age" 
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="sex">Gender:</label>
+              <select [(ngModel)]="customer.sex" name="sex" id="sex">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="address">Address:</label>
+              <textarea 
+                id="address" 
+                [(ngModel)]="customer.address" 
+                name="address" 
+                rows="3"
+                required
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="form-buttons">
+            <button 
+              type="submit" 
+              class="save-btn" 
+              [disabled]="isSaving"
+            >
+              {{ isSaving ? 'Saving...' : 'Save Changes' }}
+            </button>
+            <button 
+              type="button" 
+              class="cancel-btn" 
+              (click)="cancelEdit()"
+              [disabled]="isSaving"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!customer" class="no-data">
+    <p>Please login to view your profile.</p>
+    <button (click)="router.navigate(['/login'])" class="login-btn">Go to Login</button>
+  </div>
+</div>

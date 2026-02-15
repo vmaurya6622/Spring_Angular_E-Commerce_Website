@@ -62,4 +62,8 @@ export class ProductListComponent implements OnInit {
 	onViewDetails(product: Product): void {
 		this.router.navigate(['/products', product.id]);
 	}
+
+	goToHome(): void {
+		this.router.navigate(['/']);
+	}
 }

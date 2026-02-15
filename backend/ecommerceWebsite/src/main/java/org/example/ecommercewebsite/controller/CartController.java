@@ -22,29 +22,36 @@ public class CartController {
 		this.cartService = cartService;
 	}
 
-	@GetMapping
-	public CartManager getCart() {
-		return cartService.getOrCreateCart();
+	@GetMapping("/{customerId}")
+	public CartManager getCart(@PathVariable Long customerId) {
+		return cartService.getOrCreateCartForCustomer(customerId);
 	}
 
-	@PostMapping("/items")
-	public CartManager addItem(@RequestBody AddCartItemRequest request) {
+	@PostMapping("/{customerId}/items")
+	public CartManager addItem(
+		@PathVariable Long customerId,
+		@RequestBody AddCartItemRequest request
+	) {
 		int quantity = request.quantity() == null ? 1 : request.quantity();
-		return cartService.addItem(request.productId(), quantity);
+		return cartService.addItem(customerId, request.productId(), quantity);
 	}
 
-	@PatchMapping("/items/{itemId}")
+	@PatchMapping("/{customerId}/items/{itemId}")
 	public CartManager updateQuantity(
+		@PathVariable Long customerId,
 		@PathVariable Long itemId,
 		@RequestBody UpdateCartItemRequest request
 	) {
 		int quantity = request.quantity() == null ? 1 : request.quantity();
-		return cartService.updateQuantity(itemId, quantity);
+		return cartService.updateQuantity(customerId, itemId, quantity);
 	}
 
-	@DeleteMapping("/items/{itemId}")
-	public CartManager removeItem(@PathVariable Long itemId) {
-		return cartService.removeItem(itemId);
+	@DeleteMapping("/{customerId}/items/{itemId}")
+	public CartManager removeItem(
+		@PathVariable Long customerId,
+		@PathVariable Long itemId
+	) {
+		return cartService.removeItem(customerId, itemId);
 	}
 
 	public record AddCartItemRequest(Long productId, Integer quantity) {

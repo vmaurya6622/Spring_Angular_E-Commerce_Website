@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { CartItem } from '../../models/cart-item.model';
+import { HttpClient } from '@angular/common/http';
 
 interface CartItemView {
   id: number;
@@ -11,7 +13,6 @@ interface CartItemView {
   price: number;
   image: string;
   quantity: number;
-  // stock: number;
 }
 
 @Component({
@@ -26,17 +27,46 @@ export class CartComponent implements OnInit {
   darkMode: boolean = false;
   showDropdown: boolean = false;
   isLoggedIn: boolean = false;
+  customerName: string = '';
   selectedCheckout: string = 'cod';
-
   cartItems: CartItemView[] = [];
-
   shippingCost: number = 0;
+  isLoading: boolean = true;
 
-  constructor(private cartService: CartService, private router: Router) {}
+  constructor(
+    private cartService: CartService,
+    private http: HttpClient,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   ngOnInit(): void {
-    this.cartService.loadCart().subscribe(items => {
-      this.cartItems = items.map(item => this.mapItem(item));
+    if (isPlatformBrowser(this.platformId)) {
+      const customerData = localStorage.getItem('customer');
+      if (customerData) {
+        const customer = JSON.parse(customerData);
+        this.isLoggedIn = true;
+        this.customerName = customer.name || 'User';
+        this.loadCart();
+      } else {
+        this.isLoading = false;
+        this.router.navigate(['/login']);
+      }
+    }
+  }
+
+  loadCart(): void {
+    this.cartService.loadCart().subscribe({
+      next: (items) => {
+        console.log('Cart items loaded:', items);
+        this.cartItems = items.map(item => this.mapItem(item));
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading cart:', err);
+        this.cartItems = [];
+        this.isLoading = false;
+      }
     });
   }
 
@@ -79,24 +109,51 @@ export class CartComponent implements OnInit {
       return;
     }
 
-    const checkoutInfo = `
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    const customerData = localStorage.getItem('customer');
+    if (!customerData) {
+      alert('Please login to checkout');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const customer = JSON.parse(customerData);
+    const checkoutRequest = {
+      customerId: customer.id,
+      paymentMethod: this.selectedCheckout,
+      shippingCost: this.shippingCost
+    };
+
+    this.http.post('http://localhost:8080/api/orders/checkout', checkoutRequest)
+      .subscribe({
+        next: (order: any) => {
+          const checkoutInfo = `
       Checkout Successful!
       ==================
+      Order ID: ${order.id}
       Payment Method: ${this.getCheckoutMethodName(this.selectedCheckout)}
       
       Order Summary:
-      Subtotal: ₹${this.subtotal}
-      Tax (10%): ₹${this.tax}
-      Shipping: ${this.shippingCost === 0 ? 'FREE' : '₹' + this.shippingCost}
-      Total: ₹${this.total}
+      Subtotal: ₹${order.subtotal.toFixed(2)}
+      Tax (10%): ₹${order.tax.toFixed(2)}
+      Shipping: ${order.shippingCost === 0 ? 'FREE' : '₹' + order.shippingCost.toFixed(2)}
+      Total: ₹${order.total.toFixed(2)}
       
-      Items: ${this.cartItems.length} book(s)
+      Items: ${order.items.length} item(s)
       Thank you for your purchase!
-    `;
-
-    alert(checkoutInfo);
-    // Here you would typically call a backend API to process the order
-    this.cartItems = [];
+          `;
+          alert(checkoutInfo);
+          this.cartItems = [];
+          this.router.navigate(['/orders']);
+        },
+        error: (err) => {
+          console.error('Checkout error:', err);
+          alert(err.error.message || 'Checkout failed. Please try again.');
+        }
+      });
   }
 
   private getCheckoutMethodName(method: string): string {
@@ -118,11 +175,32 @@ export class CartComponent implements OnInit {
   }
 
   logout() {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('customer');
+    }
     this.isLoggedIn = false;
+    this.customerName = '';
     this.showDropdown = false;
+    this.router.navigate(['/login']);
+  }
+
+  navigateToProfile() {
+    this.router.navigate(['/profile']);
+  }
+
+  navigateToAddress() {
+    this.router.navigate(['/address']);
+  }
+
+  navigateToOrders() {
+    this.router.navigate(['/orders']);
   }
 
   continueShopping(): void {
+    this.router.navigate(['/']);
+  }
+
+  goToHome(): void {
     this.router.navigate(['/']);
   }
 

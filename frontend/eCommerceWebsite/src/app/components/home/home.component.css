@@ -16,8 +16,28 @@ body {
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 22px;
   font-weight: bold;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+
+.logo img {
+  height: 60px;
+  width: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px;
+}
+
+.logo img:hover {
+  transform: scale(1.05);
 }
 
 .search-bar {
@@ -47,6 +67,16 @@ body {
 
 .search-bar button:hover {
   background: #ff9500;
+}
+
+.greeting {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  padding: 8px 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
 }
 
 .nav-right {
