@@ -135,6 +135,10 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
+  viewDetails(bookId: number): void {
+    this.router.navigate(['/products', bookId]);
+  }
+
   logout(): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('customer');

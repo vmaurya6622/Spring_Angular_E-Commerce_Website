@@ -119,9 +119,38 @@ export class CartComponent implements OnInit {
   }
 
   removeItem(id: number) {
-    this.cartService.removeItem(id).subscribe(items => {
-      this.cartItems = items.map(item => this.mapItem(item));
+    console.log('Removing item with id:', id);
+    const itemToRemove = this.cartItems.find(item => item.id === id);
+    if (itemToRemove) {
+      console.log('Removing item:', itemToRemove.title);
+    }
+    
+    
+    // Immediately remove from UI for instant feedback
+    const itemIndex = this.cartItems.findIndex(item => item.id === id);
+    if (itemIndex > -1) {
+      this.cartItems.splice(itemIndex, 1);
+      this.cartItems = [...this.cartItems]; // Create new reference
       this.cdr.detectChanges();
+    }
+    
+    this.cartService.removeItem(id).subscribe({
+      next: (items) => {
+        console.log('Item removed successfully, server returned:', items);
+        console.log('Updating cart items to:', items.length, 'items');
+        
+        // Replace with server data (creates new reference)
+        this.cartItems = items.map(item => this.mapItem(item));
+        console.log('Cart items after mapping:', this.cartItems);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error removing item:', err);
+        const errorMessage = err.error?.message || err.message || 'Failed to remove item';
+        alert(errorMessage);
+        // Reload cart to sync with server state
+        this.loadCart();
+      }
     });
   }
 
@@ -237,6 +266,10 @@ export class CartComponent implements OnInit {
 
   goToHome(): void {
     this.router.navigate(['/']);
+  }
+
+  trackByItemId(index: number, item: CartItemView): number {
+    return item.id;
   }
 
   private mapItem(item: CartItem): CartItemView {

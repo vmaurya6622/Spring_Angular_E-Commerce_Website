@@ -51,7 +51,7 @@
     <div *ngIf="cartItems.length > 0" class="cart-content">
       <!-- CART ITEMS -->
       <div class="cart-items">
-        <div class="cart-item" *ngFor="let item of cartItems">
+        <div class="cart-item" *ngFor="let item of cartItems; trackBy: trackByItemId">
           <img [src]="item.image" alt="{{ item.title }}" class="item-image">
           
           <div class="item-details">

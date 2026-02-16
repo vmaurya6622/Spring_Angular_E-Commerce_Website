@@ -1,11 +1,36 @@
-<div class="detail-page">
+<div class="detail-page" [class.dark]="darkMode">
 	<nav class="navbar">
 		<div class="logo" (click)="goToHome()" style="cursor: pointer;">
 			<img src="assets/logo.png" alt="InstaKart Logo">
 		</div>
+
+		<div class="search-bar">
+			<input type="text" [(ngModel)]="searchText" placeholder="Search products...">
+			<button (click)="goToHome()">Search</button>
+		</div>
+
+		<div class="greeting" *ngIf="isLoggedIn">
+			<span>Hi, {{ customerName }}! 👋</span>
+		</div>
+
 		<div class="nav-right">
-			<button routerLink="/products">Back to Products</button>
-			<button routerLink="/cart">🛒 Cart</button>
+			<div class="user-menu" (mouseenter)="showDropdown=true" (mouseleave)="showDropdown=false">
+				<div class="user-circle">👤</div>
+				<div class="dropdown" *ngIf="showDropdown">
+					<div *ngIf="isLoggedIn">
+						<p (click)="navigateToProfile()" class="menu-item">Update Profile</p>
+						<p (click)="navigateToAddress()" class="menu-item">My Address</p>
+						<p (click)="navigateToOrders()" class="menu-item">Orders</p>
+						<p (click)="logout()" class="logout-btn">Logout</p>
+					</div>
+					<div *ngIf="!isLoggedIn">
+						<button class="dropdown-login-btn" (click)="login()">Login</button>
+					</div>
+				</div>
+			</div>
+
+			<button (click)="toggleTheme()">Switch Theme</button>
+			<button (click)="goToCart()">🛒 Cart</button>
 		</div>
 	</nav>
 
@@ -13,14 +38,48 @@
 	<div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
 
 	<section *ngIf="product" class="detail-card">
-		<img [src]="product.imageUrl" [alt]="product.name" class="detail-image">
+		<div class="image-section">
+			<img [src]="product.imageUrl" [alt]="product.name" class="detail-image">
+		</div>
 		<div class="detail-info">
 			<h1>{{ product.name }}</h1>
 			<p class="price">₹{{ product.price }}</p>
-			<p class="description">{{ product.description }}</p>
+			
+			<div class="rating">
+				⭐⭐⭐⭐½
+				<span class="rating-value">4.5</span>
+				<span class="rating-count">(128 reviews)</span>
+			</div>
+
+			<div class="stock-section">
+				<p *ngIf="product.stock > 0" class="stock-available" 
+				   [class.low-stock]="product.stock <= 5">
+					<span class="stock-label">Stock:</span> 
+					<span class="stock-number">{{ product.stock }}</span> available
+					<span *ngIf="product.stock <= 5" class="warning-text"> - Only few left!</span>
+				</p>
+				<p *ngIf="product.stock === 0" class="out-of-stock">❌ Out of Stock</p>
+			</div>
+
+			<div class="description-section">
+				<h3>Product Description</h3>
+				<p class="description">{{ product.description }}</p>
+			</div>
+
+			<div class="cart-indicator" *ngIf="isInCart">
+				<span class="checkmark">✓</span>
+				<span class="cart-text">Item in cart</span>
+			</div>
+
 			<div class="actions">
-				<button class="primary" (click)="addToCart()">Add to Cart</button>
-				<button class="ghost" routerLink="/products">Continue Shopping</button>
+				<button class="primary" 
+				        (click)="addToCart()" 
+				        [disabled]="product.stock === 0"
+				        [class.disabled]="product.stock === 0">
+					{{ product.stock === 0 ? 'Out of Stock' : 'Add to Cart' }}
+				</button>
+				<button class="ghost" (click)="goToHome()">Continue Shopping</button>
+				<button class="cart-btn" (click)="goToCart()">Go to Cart</button>
 			</div>
 		</div>
 	</section>

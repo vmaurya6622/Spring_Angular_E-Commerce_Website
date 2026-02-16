@@ -105,10 +105,25 @@ public class CartService {
 		return getOrCreateCartForCustomer(customerId);
 	}
 
+	// public CartManager removeItem(Long customerId, Long itemId) {
+	// 	CartItems item = cartItemRepo.findById(itemId)
+	// 		.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart item not found"));
+	// 	cartItemRepo.delete(item);
+	// 	return getOrCreateCartForCustomer(customerId);
+	// }
+
 	public CartManager removeItem(Long customerId, Long itemId) {
+		CartManager cart = getOrCreateCartForCustomer(customerId);
 		CartItems item = cartItemRepo.findById(itemId)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart item not found"));
+			.orElseThrow(() -> new ResponseStatusException(
+				HttpStatus.NOT_FOUND, "Cart item not found"));
+		if (!item.getCart().getId().equals(cart.getId())) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "Item does not belong to this cart");
+		}
+		cart.getItems().remove(item);
 		cartItemRepo.delete(item);
-		return getOrCreateCartForCustomer(customerId);
+		return cartRepo.save(cart);
 	}
+
 }
