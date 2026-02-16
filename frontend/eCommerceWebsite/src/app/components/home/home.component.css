@@ -210,6 +210,9 @@ body {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 24px;
   padding: 30px 60px;
+  /* display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 22px; */
 }
 
 @media (max-width: 1400px) {
@@ -240,60 +243,132 @@ body {
 }
 
 .book-card {
-  background: white;
-  padding: 12px;
+  background: #ffffff;
+  padding: 18px;
+  border-radius: 22px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
   text-align: center;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  transition: all 0.3s;
-  border-radius: 20px;
-  overflow: hidden;
-  position: relative;
 }
 
 .book-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
 }
 
-.book-card img {
-  width: 100%;
+/* IMAGE */
+.image-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+  background: #f4f6f9;
+  padding: 15px;
+  border-radius: 18px;
+}
+
+.image-wrapper img {
+  width: 180px;          /* equal width & height */
   height: 180px;
-  object-fit: cover;
-  border-radius: 15px;
-  margin-bottom: 10px;
-  position: relative;
-  z-index: 1;
+  border-radius: 10px;    /* makes it perfectly round */
+  object-fit: cover;     /* fills circle properly */
 }
 
-.book-card h3 {
-  margin: 8px 0 4px 0;
-  font-size: 14px;
-}
 
-.book-card p {
-  margin: 4px 0 10px 0;
+/* TITLE */
+.book-title {
   font-size: 16px;
-  font-weight: bold;
-  color: #ff9900;
+  font-weight: 600;
+  margin: 8px 0;
+  color: #111827;
 }
 
-.book-card button {
-  background: #ff9900;
+/* PRICE */
+.price {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ff7a00;
+  margin-bottom: 6px;
+}
+
+/* RATING */
+.rating {
+  font-size: 14px;
+  color: #f59e0b;
+  margin-bottom: 12px;
+}
+
+.rating-value {
+  color: #374151;
+  margin-left: 6px;
+}
+
+/* BOTTOM SECTION */
+.card-bottom {
+  display: flex;
+  /* justify-content: space-between; */
+  gap: 10px;  
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* ADD BUTTON */
+.add-btn {
+  background: #ff7a00;
   border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  border-radius: 25px;
+  padding: 8px 14px;
+  border-radius: 20px;
   color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.add-btn:hover {
+  background: #e66a00;
+}
+
+/* STOCK BOX */
+.stock-box {
+  background: #f3f4f6;
+  padding: 8px 15px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.stock-box span {
+  background: #fcdede;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+/* OUT OF STOCK */
+.out-stock {
+  background: #f8d7da;
+  color: #a94442;
+  padding: 10px;
+  border-radius: 12px;
   font-weight: bold;
   width: 100%;
-  transition: all 0.3s;
-  font-size: 12px;
 }
 
-.book-card button:hover {
-  background: #ff7700;
-  transform: scale(1.02);
+/* DETAILS BUTTON */
+.details-btn {
+  width: 100%;
+  padding: 8px;
+  border-radius: 15px;
+  border: none;
+  background: #f3f4f6;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
 }
+
+.details-btn:hover {
+  background: #e5e7eb;
+}
+
 
 /* CART INDICATOR */
 .cart-indicator {

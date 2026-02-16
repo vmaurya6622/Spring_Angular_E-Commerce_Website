@@ -42,36 +42,52 @@
 		<p>Browse handpicked products and add them to your cart in one click.</p>
 	</section>
   <!-- BOOK GRID -->
-  <div class="grid">
-    <div class="book-card" *ngFor="let book of paginatedBooks">
-      <div class="cart-indicator" *ngIf="isInCart(book.id)">
-        <span class="checkmark">✓</span>
-      </div>
+
+
+    <div class="grid">
+      <div class="book-card" *ngFor="let book of paginatedBooks">
+
+    <!-- Image -->
+    <div class="image-wrapper">
       <img [src]="book.image" alt="">
-      <h3>{{ book.title }}</h3>
-      <p>₹{{ book.price }}</p>
+    </div>
 
-      <!-- STOCK LOGIC -->
-      <div *ngIf="book.stock > 0; else outOfStockBlock">
+    <!-- Title -->
+    <h3 class="book-title">{{ book.title }}</h3>
 
-        <p class="stock-info"
-          [ngClass]="{'low-stock': book.stock <= 2}">
-          Only {{ book.stock }} left
-        </p>
+    <!-- Price -->
+    <div class="price">₹{{ book.price }}</div>
 
-        <button (click)="addToCart(book)">
-          Add to Cart
-        </button>
+    <!-- Rating -->
+    <div class="rating">
+      ⭐⭐⭐⭐½
+      <span class="rating-value">4.5</span>
+    </div>
 
+    <!-- Bottom Section -->
+    <div class="card-bottom">
+
+      <button 
+        *ngIf="book.stock > 0"
+        (click)="addToCart(book)"
+        class="add-btn">
+        Add to Cart
+      </button>
+
+      <div *ngIf="book.stock > 0" class="stock-box">
+        Stock: <span>{{ book.stock }}</span>
       </div>
 
-      <ng-template #outOfStockBlock>
-        <p class="out-of-stock">
-          ❌ Out of Stock
-        </p>
-      </ng-template>
+      <div *ngIf="book.stock === 0" class="out-stock">
+        Out of Stock
+      </div>
 
     </div>
+
+    <button class="details-btn">View Details</button>
+
+  </div>
+
   </div>
 
 
