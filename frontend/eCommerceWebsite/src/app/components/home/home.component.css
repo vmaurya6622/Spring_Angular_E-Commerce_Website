@@ -1,3 +1,11 @@
+.page {
+	min-height: 100vh;
+	background: linear-gradient(140deg, #fef6e4, #e3f2fd, #f9d8ff);
+	padding: 15px ;
+	font-family: 'Segoe UI', sans-serif;
+}
+
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -13,6 +21,8 @@ body {
   padding: 20px 30px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   border-radius: 10px;
+  /* background: linear-gradient(140deg, #fef6e4, #e3f2fd, #f9d8ff); */
+
 }
 
 .logo {
@@ -68,6 +78,7 @@ body {
 .search-bar button:hover {
   background: #ff9500;
 }
+
 
 .greeting {
   font-size: 16px;
@@ -196,9 +207,36 @@ body {
 /* GRID */
 .grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 25px;
-  padding: 30px 80px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 24px;
+  padding: 30px 60px;
+}
+
+@media (max-width: 1400px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 28px 40px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 24px 24px;
+  }
+}
+
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: 1fr;
+    padding: 20px 16px;
+  }
 }
 
 .book-card {
@@ -374,4 +412,24 @@ footer {
   font-weight: bold;
   color: red;
   margin-top: 10px;
+}
+.hero {
+	margin: 15px 0 0px;
+	background: white;
+  font-family: 'Segoe UI', sans-serif;
+	border-radius: 20px;
+	padding: 15px 28px;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.hero h1 {
+	margin: 0 0 8px;
+	font-size: 28px;
+  font-family: 'Segoe UI', sans-serif;
+	color: #1f2937;
+}
+
+.hero p {
+	margin: 0;
+	color: #4b5563;
 }

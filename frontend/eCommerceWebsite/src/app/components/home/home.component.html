@@ -1,4 +1,4 @@
-<div [class.dark]="darkMode">
+<div [class.dark]="darkMode" class="page">
 
   <!-- NAVBAR -->
   <nav class="navbar">
@@ -36,7 +36,11 @@
       <button (click)="goToCart()">🛒 Cart</button>
     </div>
   </nav>
-
+  
+  <section class="hero">
+		<h1>Shop the Latest Arrivals</h1>
+		<p>Browse handpicked products and add them to your cart in one click.</p>
+	</section>
   <!-- BOOK GRID -->
   <div class="grid">
     <div class="book-card" *ngFor="let book of paginatedBooks">

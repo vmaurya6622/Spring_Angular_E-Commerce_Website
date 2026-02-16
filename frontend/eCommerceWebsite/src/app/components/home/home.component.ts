@@ -26,7 +26,7 @@ export class HomeComponent implements OnInit {
 
   searchText = '';
   currentPage = 1;
-  itemsPerPage = 12;
+  itemsPerPage = 10;
   darkMode = false;
   showDropdown = false;
   isLoggedIn = false;
