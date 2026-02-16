@@ -1,4 +1,4 @@
-import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -39,6 +39,7 @@ export class CartComponent implements OnInit {
     private cartService: CartService,
     private http: HttpClient,
     private router: Router,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -63,11 +64,13 @@ export class CartComponent implements OnInit {
         console.log('Cart items loaded:', items);
         this.cartItems = items.map(item => this.mapItem(item));
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading cart:', err);
         this.cartItems = [];
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -96,6 +99,7 @@ export class CartComponent implements OnInit {
     this.cartService.updateQuantity(id, currentQuantity + 1).subscribe({
       next: (items) => {
         this.cartItems = items.map(item => this.mapItem(item));
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error updating quantity:', err);
@@ -110,12 +114,14 @@ export class CartComponent implements OnInit {
   decreaseQuantity(id: number, currentQuantity: number) {
     this.cartService.updateQuantity(id, currentQuantity - 1).subscribe(items => {
       this.cartItems = items.map(item => this.mapItem(item));
+      this.cdr.detectChanges();
     });
   }
 
   removeItem(id: number) {
     this.cartService.removeItem(id).subscribe(items => {
       this.cartItems = items.map(item => this.mapItem(item));
+      this.cdr.detectChanges();
     });
   }
 
