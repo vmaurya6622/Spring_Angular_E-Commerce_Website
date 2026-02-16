@@ -11,7 +11,7 @@ INSERT INTO products (name, description, price, image_url, stock, rating) VALUES
 ('Sports Water Bottle', 'BPA-free bottle with leakproof lid.', 499.00, 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_750,h_750/global/055051/01/fnd/IND/fmt/png/Training-Sportstyle-Training-Spill-Proof-Waterbottle', 1, 4.4),
 ('Wireless Mouse', 'Ergonomic mouse with silent clicks.', 699.00, 'https://images.unsplash.com/photo-1527814050087-3793815479db', 7, 4.3),
 ('Mechanical Keyboard', 'RGB keyboard with tactile switches.', 3499.00, 'https://m.media-amazon.com/images/I/619FrkkxZ-L._AC_SX466_.jpg', 0, 4.9),
-('Desk Organizer', 'Minimal organizer for pens and notes.', 549.00, 'https://m.media-amazon.com/images/I/619FrkkxZ-L._AC_SX466_.jpg', 3, 4.1),
+('Desk Organizer', 'Minimal organizer for pens and notes.', 549.00, 'https://m.media-amazon.com/images/I/71LPIx-aJ9L._AC_SX679_.jpg', 3, 4.1),
 ('Ceramic Planter', 'Handcrafted planter for indoor plants.', 799.00, 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6', 5, 4.6),
 ('Yoga Mat', 'Non-slip mat with extra cushioning.', 1299.00, 'https://images.unsplash.com/photo-1518611012118-696072aa579a', 5, 4.5),
 ('Fitness Bands', 'Resistance bands set for workouts.', 899.00, 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438', 2, 4.3),
