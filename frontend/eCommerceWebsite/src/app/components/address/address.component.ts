@@ -9,6 +9,7 @@ interface Customer {
   name: string;
   email: string;
   address: string;
+  addresses?: string[];
 }
 
 @Component({
@@ -36,13 +37,37 @@ export class AddressComponent implements OnInit {
       const customerData = localStorage.getItem('customer');
       if (customerData) {
         this.customer = JSON.parse(customerData);
-        // Initialize addresses from customer data
-        if (this.customer?.address) {
-          this.addresses = [this.customer.address];
-        }
+        this.initializeAddresses();
       } else {
         this.router.navigate(['/login']);
       }
+    }
+  }
+
+  private initializeAddresses(): void {
+    if (!this.customer) {
+      return;
+    }
+    if (Array.isArray(this.customer.addresses) && this.customer.addresses.length > 0) {
+      this.addresses = [...this.customer.addresses];
+      if (!this.customer.address || !this.addresses.includes(this.customer.address)) {
+        this.customer.address = this.addresses[0];
+      }
+    } else if (this.customer.address) {
+      this.addresses = [this.customer.address];
+    } else {
+      this.addresses = [];
+    }
+    this.persistCustomer();
+  }
+
+  private persistCustomer(): void {
+    if (!this.customer) {
+      return;
+    }
+    this.customer.addresses = [...this.addresses];
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('customer', JSON.stringify(this.customer));
     }
   }
 
@@ -57,7 +82,8 @@ export class AddressComponent implements OnInit {
   }
 
   addAddress(): void {
-    if (!this.newAddress.trim()) {
+    const trimmedAddress = this.newAddress.trim();
+    if (!trimmedAddress) {
       this.messageBox = { type: 'error', message: 'Please enter an address' };
       return;
     }
@@ -65,13 +91,11 @@ export class AddressComponent implements OnInit {
     this.isSaving = true;
     
     setTimeout(() => {
-      this.addresses.push(this.newAddress);
-      if (this.customer) {
-        this.customer.address = this.newAddress;
-        if (isPlatformBrowser(this.platformId)) {
-          localStorage.setItem('customer', JSON.stringify(this.customer));
-        }
+      this.addresses.push(trimmedAddress);
+      if (this.customer && !this.customer.address) {
+        this.customer.address = trimmedAddress;
       }
+      this.persistCustomer();
       this.isSaving = false;
       this.isAdding = false;
       this.messageBox = {
@@ -85,7 +109,22 @@ export class AddressComponent implements OnInit {
   }
 
   deleteAddress(index: number): void {
+    if (this.addresses.length <= 1) {
+      this.messageBox = {
+        type: 'error',
+        message: 'At least one address is required'
+      };
+      setTimeout(() => {
+        this.messageBox = null;
+      }, 3000);
+      return;
+    }
+    const removedAddress = this.addresses[index];
     this.addresses.splice(index, 1);
+    if (this.customer?.address === removedAddress) {
+      this.customer.address = this.addresses[0] ?? '';
+    }
+    this.persistCustomer();
     this.messageBox = {
       type: 'success',
       message: 'Address deleted successfully!'
@@ -98,9 +137,7 @@ export class AddressComponent implements OnInit {
   selectAddress(address: string): void {
     if (this.customer) {
       this.customer.address = address;
-      if (isPlatformBrowser(this.platformId)) {
-        localStorage.setItem('customer', JSON.stringify(this.customer));
-      }
+      this.persistCustomer();
       this.messageBox = {
         type: 'success',
         message: 'Address selected as default!'

@@ -274,6 +274,12 @@
   transform: scale(1.05);
 }
 
+.delete-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .empty-state {
   text-align: center;
   padding: 60px 20px;

@@ -1,4 +1,4 @@
-import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule, NavigationEnd, ActivatedRoute } from '@angular/router';
@@ -38,13 +38,15 @@ interface Order {
 })
 export class OrdersComponent implements OnInit {
   customer: Customer | null = null;
-  orders: Order[] = [];
+  orders: Order[] | null = null;
+
   expandedOrderId: string | null = null;
 
   constructor(
     public router: Router,
     private route: ActivatedRoute,
     private http: HttpClient,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -68,6 +70,7 @@ export class OrdersComponent implements OnInit {
   }
 
   loadOrders(): void {
+    this.orders=null;
     console.log('=== LOAD ORDERS CALLED ===');
     if (!isPlatformBrowser(this.platformId)) {
       console.log('Not in browser, skipping loadOrders');
@@ -87,16 +90,17 @@ export class OrdersComponent implements OnInit {
     console.log('API URL:', apiUrl);
     console.log('Making GET request...');
     
-    this.http.get<any[]>(apiUrl)
+    this.http.get<any>(apiUrl)
       .subscribe({
         next: (orders) => {
           console.log('=== API RESPONSE SUCCESS ===');
           console.log('Raw response:', orders);
           console.log('Response type:', typeof orders);
           console.log('Is Array:', Array.isArray(orders));
-          console.log('Number of orders:', orders.length);
+          const rawOrders = Array.isArray(orders) ? orders : [];
+          console.log('Number of orders:', rawOrders.length);
           
-          if (orders.length === 0) {
+          if (rawOrders.length === 0) {
             console.warn('!!! NO ORDERS FOUND FOR CUSTOMER !!!');
             console.warn('This might mean:');
             console.warn('1. No orders have been placed yet');
@@ -104,26 +108,30 @@ export class OrdersComponent implements OnInit {
             console.warn('3. Customer ID mismatch');
           } else {
             console.log('Processing orders...');
-            orders.forEach((order, index) => {
+            rawOrders.forEach((order, index) => {
               console.log(`Order ${index + 1}:`, order);
             });
           }
           
-          this.orders = orders.map(order => ({
-            id: order.id.toString(),
-            orderDate: new Date(order.orderDate),
-            items: order.items.map((item: any) => ({
-              id: item.id.toString(),
-              productName: item.product.name,
-              quantity: item.quantity,
-              price: item.price,
-              subtotal: item.subtotal
-            })),
-            subtotal: order.subtotal,
-            tax: order.tax,
-            total: order.total,
-            status: order.status as 'pending' | 'shipped' | 'delivered' | 'cancelled'
-          }));
+          this.orders = rawOrders.map(order => {
+            const rawItems = Array.isArray(order.items) ? order.items : [];
+            return {
+              id: order.id?.toString() ?? '',
+              orderDate: order.orderDate ? new Date(order.orderDate) : new Date(),
+              items: rawItems.map((item: any) => ({
+                id: item.id?.toString() ?? '',
+                productName: item.product?.name ?? item.productName ?? 'Unknown Product',
+                quantity: item.quantity ?? 0,
+                price: item.price ?? 0,
+                subtotal: item.subtotal ?? 0
+              })),
+              subtotal: order.subtotal ?? 0,
+              tax: order.tax ?? 0,
+              total: order.total ?? 0,
+              status: (order.status as 'pending' | 'shipped' | 'delivered' | 'cancelled') ?? 'pending'
+            };
+          });
+          this.cdr.detectChanges();
           console.log('Processed orders:', this.orders);
           console.log('=== LOAD ORDERS COMPLETE ===');
         },
@@ -135,6 +143,8 @@ export class OrdersComponent implements OnInit {
           console.error('Error message:', err.message);
           console.error('Error details:', err.error);
           console.error('Full error object:', JSON.stringify(err, null, 2));
+          this.orders = [];
+          this.cdr.detectChanges();
           alert('Failed to load orders. Check console for details.');
         }
       });
@@ -145,12 +155,13 @@ export class OrdersComponent implements OnInit {
   }
 
   getTotalSpent(): number {
-    return this.orders.reduce((sum, order) => sum + order.total, 0);
+    return this.orders?.reduce((sum, order) => sum + order.total, 0) ?? 0;
   }
 
   getFirstOrderItemCount(): number {
-    return this.orders.length > 0 ? this.orders[0].items.length : 0;
+    return this.orders?.[0]?.items?.length ?? 0;
   }
+
 
   getStatusColor(status: string): string {
     switch (status) {

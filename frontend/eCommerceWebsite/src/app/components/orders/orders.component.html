@@ -6,7 +6,9 @@
   </header>
 
   <div class="content">
-    <div *ngIf="customer && orders.length > 0" class="orders-wrapper">
+    <!-- <div *ngIf="customer && orders.length > 0" class="orders-wrapper"> -->
+    <div *ngIf="orders && orders.length > 0" class="orders-wrapper">
+
       <div class="order-stats">
         <div class="stat-card">
           <div class="stat-number">{{ orders.length }}</div>
@@ -79,11 +81,11 @@
                 </div>
                 <div class="summary-row">
                   <span class="label">GST (10%):</span>
-                  <span class="value">₹{{ order.tax }}</span>
+                  <span class="value">₹{{ order.tax | number:'1.2-2' }}</span>
                 </div>
                 <div class="summary-row total">
                   <span class="label">Total Amount:</span>
-                  <span class="value">₹{{ order.total }}</span>
+                  <span class="value">₹{{ order.total | number:'1.2-2'}}</span>
                 </div>
               </div>
             </div>
@@ -121,7 +123,8 @@
       </div>
     </div>
 
-    <div *ngIf="customer && orders.length === 0" class="empty-state">
+    <div *ngIf="orders && orders.length === 0" class="empty-state">
+
       <div class="empty-icon">📦</div>
       <p>You haven't placed any orders yet</p>
       <p class="sub-text">Start shopping to see your orders here</p>
