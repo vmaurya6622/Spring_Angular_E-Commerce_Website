@@ -1,5 +1,5 @@
 -- Clear existing data in the correct order (respecting foreign key constraints)
-TRUNCATE TABLE order_items, orders, cart_items, cart_manager, products, customers CASCADE;
+-- TRUNCATE TABLE order_items, orders, cart_items, cart_manager, products, customers CASCADE;
 
 -- Reset the sequence for products to start from 1
 ALTER SEQUENCE products_id_seq RESTART WITH 1;
