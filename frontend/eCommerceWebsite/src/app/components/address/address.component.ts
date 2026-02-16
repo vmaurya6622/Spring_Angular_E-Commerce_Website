@@ -1,4 +1,4 @@
-import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,6 +29,7 @@ export class AddressComponent implements OnInit {
 
   constructor(
     public router: Router,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -59,6 +60,7 @@ export class AddressComponent implements OnInit {
       this.addresses = [];
     }
     this.persistCustomer();
+    this.cdr.detectChanges();
   }
 
   private persistCustomer(): void {
@@ -98,12 +100,14 @@ export class AddressComponent implements OnInit {
       this.persistCustomer();
       this.isSaving = false;
       this.isAdding = false;
+      this.cdr.detectChanges();
       this.messageBox = {
         type: 'success',
         message: 'Address added successfully!'
       };
       setTimeout(() => {
         this.messageBox = null;
+        this.cdr.detectChanges();
       }, 3000);
     }, 1000);
   }
@@ -114,8 +118,10 @@ export class AddressComponent implements OnInit {
         type: 'error',
         message: 'At least one address is required'
       };
+      this.cdr.detectChanges();
       setTimeout(() => {
         this.messageBox = null;
+        this.cdr.detectChanges();
       }, 3000);
       return;
     }
@@ -125,12 +131,14 @@ export class AddressComponent implements OnInit {
       this.customer.address = this.addresses[0] ?? '';
     }
     this.persistCustomer();
+    this.cdr.detectChanges();
     this.messageBox = {
       type: 'success',
       message: 'Address deleted successfully!'
     };
     setTimeout(() => {
       this.messageBox = null;
+      this.cdr.detectChanges();
     }, 3000);
   }
 
@@ -138,12 +146,14 @@ export class AddressComponent implements OnInit {
     if (this.customer) {
       this.customer.address = address;
       this.persistCustomer();
+      this.cdr.detectChanges();
       this.messageBox = {
         type: 'success',
         message: 'Address selected as default!'
       };
       setTimeout(() => {
         this.messageBox = null;
+        this.cdr.detectChanges();
       }, 2000);
     }
   }

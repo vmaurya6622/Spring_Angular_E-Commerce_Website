@@ -64,9 +64,11 @@ export class HomeComponent implements OnInit {
         items.forEach(item => {
           this.productsInCart.add(item.product.id);
         });
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading cart items:', err);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -75,9 +77,11 @@ export class HomeComponent implements OnInit {
     this.productService.getProducts(0, 100).subscribe({
       next: response => {
         this.books = response.content.map(product => this.mapProduct(product));
+        this.cdr.detectChanges();
       },
       error: () => {
         this.books = [];
+        this.cdr.detectChanges();
       }
     });
   }
@@ -200,7 +204,7 @@ export class HomeComponent implements OnInit {
 
   isInCart(bookId: number): boolean {
     const inCart = this.productsInCart.has(bookId);
-    console.log(`Checking if book ${bookId} is in cart:`, inCart);
+    // console.log(`Checking if book ${bookId} is in cart:`, inCart);
     return inCart;
   }
 
