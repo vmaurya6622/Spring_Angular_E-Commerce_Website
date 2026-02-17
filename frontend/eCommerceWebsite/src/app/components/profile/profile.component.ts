@@ -21,7 +21,7 @@ export class ProfileComponent implements OnInit {
   constructor(
     public router: Router,
     private customerService: CustomerService,
-    private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef, // this helps to detect changes after async operations and show them live on screen.
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -32,7 +32,6 @@ export class ProfileComponent implements OnInit {
   private loadCustomerProfile(): void {
     if (isPlatformBrowser(this.platformId)) {
       let customerData = localStorage.getItem('customer');
-      
       // Fallback to sessionStorage if not in localStorage
       if (!customerData) {
         customerData = sessionStorage.getItem('customer');
@@ -71,7 +70,7 @@ export class ProfileComponent implements OnInit {
   }
 
   saveProfile(): void {
-    if (!this.customer) return;
+    if (!this.customer) return; // Should never happen, but just to be safe
 
     this.isSaving = true;
     this.cdr.detectChanges();

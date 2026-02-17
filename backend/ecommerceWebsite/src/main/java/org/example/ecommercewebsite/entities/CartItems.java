@@ -5,9 +5,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Data
+@Data // this automatically generates getters and setters no need to create manually.
 public class CartItems {
-    @Id
+    @Id // indicates that this is the primary key.
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

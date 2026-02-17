@@ -26,7 +26,7 @@ export class SignupComponent {
 			age: ['', [Validators.required, Validators.min(1), Validators.max(120)]],
 			sex: ['', Validators.required],
 			dob: ['', Validators.required],
-			mobile: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+			mobile: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]], // can fill only 10 digit number with 0-9 digits
 			address: ['', Validators.required],
 			username: ['', [Validators.required, Validators.minLength(3)]],
 			password: ['', [Validators.required, Validators.minLength(6)]],
