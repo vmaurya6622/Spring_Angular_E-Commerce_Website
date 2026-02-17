@@ -55,13 +55,21 @@ export class LoginComponent {
     this.http.post('http://localhost:8080/api/customers/login', credentials)
       .subscribe({
         next: (response: any) => {
-          // Store customer info in localStorage (only in browser)
+          console.log('Login response:', response);
+          // Store customer info in both localStorage and sessionStorage (only in browser)
           if (isPlatformBrowser(this.platformId)) {
-            localStorage.setItem('customer', JSON.stringify(response.customer));
+            const customerData = response.customer;
+            console.log('Storing customer:', customerData);
+            const jsonData = JSON.stringify(customerData);
+            localStorage.setItem('customer', jsonData);
+            sessionStorage.setItem('customer', jsonData);
+            console.log('Stored in localStorage:', localStorage.getItem('customer'));
+            console.log('Stored in sessionStorage:', sessionStorage.getItem('customer'));
           }
           this.router.navigate(['/']);
         },
         error: (error) => {
+          console.error('Login error:', error);
           this.errorMessage = error.error.message || 'Invalid username/email or password.';
         }
       });
