@@ -80,7 +80,7 @@ public class OrderService {
 
         // Calculate totals
         order.setSubtotal(subtotal);
-        order.setTax(subtotal * 0.10); // 10% GST
+        order.setTax(subtotal * 0.10); // 10% GST addition
         order.setTotal(order.getSubtotal() + order.getTax() + order.getShippingCost());
 
         // Save order
