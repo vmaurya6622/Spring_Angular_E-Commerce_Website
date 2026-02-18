@@ -1,10 +1,7 @@
--- Clear existing data in the correct order (respecting foreign key constraints)
 -- TRUNCATE TABLE order_items, orders, cart_items, cart_manager, products, customers CASCADE;
 
--- Reset the sequence for products to start from 1
 ALTER SEQUENCE products_id_seq RESTART WITH 1;
 
--- Insert products with explicit IDs from 1 to 54
 INSERT INTO products (id, name, description, price, image_url, stock, rating) VALUES
 (1, 'Urban Backpack', 'Lightweight backpack with laptop sleeve and waterproof coating.', 1499.00, 'https://urbanwolfstore.com/cdn/shop/files/1_a29def20-6ba2-47f9-9343-c6e63a8bac4b.jpg?v=1692709067', 3, 4.5),
 (2, 'Noise Canceling Headphones', 'Over-ear headphones with 40h battery life and deep bass.', 4999.00, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e', 0, 4.8),
@@ -62,10 +59,8 @@ INSERT INTO products (id, name, description, price, image_url, stock, rating) VA
 (54, 'Premium Pen', 'Metal body pen with smooth ink.', 599.00, 'https://images.unsplash.com/photo-1519681393784-d120267933ba', 6, 4.4)
 ON CONFLICT (id) DO NOTHING;
 
--- Reset the products sequence to start from the next available ID
 ALTER SEQUENCE products_id_seq RESTART WITH 55;
 
--- Reset customers sequence and insert sample customers with explicit IDs
 ALTER SEQUENCE customers_id_seq RESTART WITH 1;
 
 INSERT INTO customers (id, name, age, sex, date_of_birth, mobile, address, username, password, email) VALUES
@@ -75,5 +70,4 @@ INSERT INTO customers (id, name, age, sex, date_of_birth, mobile, address, usern
 (4, 'Sneha Reddy', 24, 'Female', '2002-05-18', '6543210987', '321 Anna Salai, Chennai, India', 'sneha_reddy', 'sneha@789', 'sneha.reddy@email.com')
 ON CONFLICT (id) DO NOTHING;
 
--- Reset customers sequence to start from the next available ID
 ALTER SEQUENCE customers_id_seq RESTART WITH 5;
