@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { validate } from '@angular/forms/signals';
 
 @Component({
 	selector: 'app-signup',
@@ -22,8 +23,8 @@ export class SignupComponent {
 		private router: Router
 	) {
 		this.signupForm = this.fb.group({
-			name: ['', [Validators.required, Validators.minLength(2)]],
-			age: ['', [Validators.required, Validators.min(1), Validators.max(120)]],
+			name: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[a-zA-Z\s]+$/)]], // can fill only letters and spaces
+			age: ['', [Validators.required, Validators.min(1), Validators.max(120), Validators.pattern(/^(?!.*[a-zA-Z]).*$/)]], 
 			sex: ['', Validators.required],
 			dob: ['', Validators.required],
 			mobile: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]], // can fill only 10 digit number with 0-9 digits

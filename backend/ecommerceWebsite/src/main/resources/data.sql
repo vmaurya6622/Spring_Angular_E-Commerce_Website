@@ -4,7 +4,7 @@ ALTER SEQUENCE products_id_seq RESTART WITH 1;
 
 INSERT INTO products (id, name, description, price, image_url, stock, rating) VALUES
 (1, 'Urban Backpack', 'Lightweight backpack with laptop sleeve and waterproof coating.', 1499.00, 'https://urbanwolfstore.com/cdn/shop/files/1_a29def20-6ba2-47f9-9343-c6e63a8bac4b.jpg?v=1692709067', 3, 4.5),
-(2, 'Noise Canceling Headphones', 'Over-ear headphones with 40h battery life and deep bass.', 4999.00, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e', 0, 4.8),
+(2, 'Noise Canceling Headphones', 'Over-ear headphones with 40h battery life and deep bass.', 4999.00, 'https://th.bing.com/th/id/OPAC.UNhUN5cdmxagrg474C474?w=592&h=550&o=5&dpr=1.3&pid=21.1', 0, 4.8),
 (3, 'Classic Sneakers', 'Comfortable everyday sneakers with breathable mesh.', 2299.00, 'https://images.opumo.com/wordpress/wp-content/uploads/2022/07/opumo-banner-30.jpg', 5, 4.3),
 (4, 'Smart Watch', 'Fitness tracking, heart rate monitor, and sleep analytics.', 6999.00, 'https://m.media-amazon.com/images/I/61ovuUb5dkL._AC_SX522_.jpg', 2, 4.7),
 (5, 'Minimal Desk Lamp', 'Warm LED desk lamp with adjustable brightness.', 1199.00, 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4', 2, 4.4),

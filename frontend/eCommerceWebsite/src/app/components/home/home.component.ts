@@ -34,41 +34,65 @@ export class HomeComponent implements OnInit {
   books: Book[] = [];
   productsInCart: Set<number> = new Set();
 
+
   constructor(
     private productService: ProductService,
     private cartService: CartService,
     private router: Router,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    // Check if user is logged in (only in browser, not on server)
     if (isPlatformBrowser(this.platformId)) {
       const customerData = localStorage.getItem('customer');
       if (customerData) {
         const customer = JSON.parse(customerData);
         this.isLoggedIn = true;
         this.customerName = customer.name || 'User';
-        this.loadCartItems();
       }
     }
 
+    // First load products
     this.loadProducts();
+    this.cdr.detectChanges();
+    // Then load cart
+    if (this.isLoggedIn) {
+      this.loadCartItems();
+    }
   }
+
+  // loadCartItems(): void {
+  //   this.cartService.loadCart().subscribe({
+  //     next: (items) => {
+  //       // Mark all products that are in the cart
+  //       items.forEach(item => {
+  //         this.productsInCart.add(item.product.id);
+  //       });
+  //       this.cdr.detectChanges();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading cart items:', err);
+  //       this.cdr.detectChanges();
+  //     }
+  //   });
+  // }
 
   loadCartItems(): void {
     this.cartService.loadCart().subscribe({
       next: (items) => {
-        // Mark all products that are in the cart
+
+        // CLEAR previous values first
+        this.productsInCart = new Set<number>();
+
         items.forEach(item => {
           this.productsInCart.add(item.product.id);
         });
+
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading cart items:', err);
-        this.cdr.detectChanges();
       }
     });
   }
@@ -156,13 +180,15 @@ export class HomeComponent implements OnInit {
         this.router.navigate(['/login']);
         return;
       }
+      this.cdr.detectChanges();
 
       // First check current cart quantity for this product
       this.cartService.loadCart().subscribe({
+        
         next: (cartItems) => {
           const existingItem = cartItems.find(item => item.product.id === book.id);
           const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
-          
+
           if (currentQuantityInCart >= book.stock) {
             alert(`Cannot add more! Only ${book.stock} items available in stock. You already have ${currentQuantityInCart} in your cart.`);
             return;
@@ -173,7 +199,8 @@ export class HomeComponent implements OnInit {
             next: () => {
               console.log('Adding product to cart Set:', book.id);
               // Create new Set instance to trigger change detection
-              this.productsInCart = new Set(this.productsInCart).add(book.id);
+              this.productsInCart.add(book.id);
+              this.productsInCart = new Set(this.productsInCart);
               console.log('Products in cart:', Array.from(this.productsInCart));
               // Manually trigger change detection
               this.cdr.detectChanges();
@@ -191,7 +218,8 @@ export class HomeComponent implements OnInit {
           // If cart check fails, try adding anyway
           this.cartService.addItem(book.id, 1).subscribe({
             next: () => {
-              this.productsInCart = new Set(this.productsInCart).add(book.id);
+              this.productsInCart.add(book.id);
+              this.productsInCart = new Set(this.productsInCart);
               this.cdr.detectChanges();
               alert(`${book.title} added to cart successfully!`);
             },
@@ -203,6 +231,7 @@ export class HomeComponent implements OnInit {
           });
         }
       });
+      this.cdr.detectChanges();
     }
   }
 

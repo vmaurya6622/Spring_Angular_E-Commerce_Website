@@ -38,16 +38,21 @@
   </nav>
   
   <section class="hero">
-		<h1>Shop the Latest Arrivals</h1>
-		<p>Browse handpicked products and add them to your cart in one click.</p>
+    <div class="hero-content">
+      <h1>Shop the Latest Arrivals</h1>
+      <p class="yoyo">Browse handpicked products and add them to your cart in one click.</p>
+    </div>
 	</section>
   <!-- BOOK GRID -->
 
 
-    <div class="grid">
+  <div class="grid">
       <div class="book-card" *ngFor="let book of paginatedBooks">
 
     <!-- Image -->
+     <div class="cart-indicator" *ngIf="isInCart(book.id)">
+        <div class="checkmark">✓</div>
+      </div>
     <div class="image-wrapper">
       <img [src]="book.image" alt="">
     </div>
