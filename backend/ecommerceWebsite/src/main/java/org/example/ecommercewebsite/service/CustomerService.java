@@ -16,7 +16,7 @@ public class CustomerService {
         this.customerRepo = customerRepo;
     }
 
-    public Customer signup(Customer customer) {
+    public Customer signup(Customer customer) { // try catch use here
         if (customerRepo.existsByUsername(customer.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
