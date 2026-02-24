@@ -8,6 +8,7 @@ import org.example.ecommercewebsite.repositories.CartItemRepo;
 import org.example.ecommercewebsite.repositories.CartRepo;
 import org.example.ecommercewebsite.repositories.CustomerRepo;
 import org.example.ecommercewebsite.repositories.ProductRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,17 +17,14 @@ import java.util.Optional;
 
 @Service
 public class CartService {
-	private final CartRepo cartRepo;
-	private final CartItemRepo cartItemRepo;
-	private final ProductRepo productRepo;
-	private final CustomerRepo customerRepo;
-
-	public CartService(CartRepo cartRepo, CartItemRepo cartItemRepo, ProductRepo productRepo, CustomerRepo customerRepo) {
-		this.cartRepo = cartRepo;
-		this.cartItemRepo = cartItemRepo;
-		this.productRepo = productRepo;
-		this.customerRepo = customerRepo;
-	}
+	@Autowired
+	private CartRepo cartRepo;
+	@Autowired
+	private CartItemRepo cartItemRepo;
+	@Autowired
+	private ProductRepo productRepo;
+	@Autowired
+	private  CustomerRepo customerRepo;
 
 	public CartManager getOrCreateCartForCustomer(Long customerId) {
 		Customer customer = customerRepo.findById(customerId)

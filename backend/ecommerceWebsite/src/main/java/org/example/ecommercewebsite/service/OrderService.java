@@ -2,6 +2,7 @@ package org.example.ecommercewebsite.service;
 
 import org.example.ecommercewebsite.entities.*;
 import org.example.ecommercewebsite.repositories.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,20 +12,16 @@ import java.util.List;
 
 @Service
 public class OrderService {
-    private final OrderRepo orderRepo;
-    private final CartRepo cartRepo;
-    private final CartItemRepo cartItemRepo;
-    private final CustomerRepo customerRepo;
-    private final ProductRepo productRepo;
-
-    public OrderService(OrderRepo orderRepo, CartRepo cartRepo, CartItemRepo cartItemRepo, 
-                       CustomerRepo customerRepo, ProductRepo productRepo) {
-        this.orderRepo = orderRepo;
-        this.cartRepo = cartRepo;
-        this.cartItemRepo = cartItemRepo;
-        this.customerRepo = customerRepo;
-        this.productRepo = productRepo;
-    }
+    @Autowired
+    private OrderRepo orderRepo;
+    @Autowired
+    private CartRepo cartRepo;
+    @Autowired
+    private CartItemRepo cartItemRepo;
+    @Autowired
+    private CustomerRepo customerRepo;
+    @Autowired
+    private ProductRepo productRepo;
 
     @Transactional
     public Order checkout(Long customerId, String paymentMethod, Double shippingCost) {

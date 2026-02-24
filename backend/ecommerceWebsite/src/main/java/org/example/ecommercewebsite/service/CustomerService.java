@@ -2,6 +2,7 @@ package org.example.ecommercewebsite.service;
 
 import org.example.ecommercewebsite.entities.Customer;
 import org.example.ecommercewebsite.repositories.CustomerRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -10,11 +11,8 @@ import java.util.Optional;
 
 @Service
 public class CustomerService {
-    private final CustomerRepo customerRepo;
-
-    public CustomerService(CustomerRepo customerRepo) {
-        this.customerRepo = customerRepo;
-    }
+    @Autowired
+    private  CustomerRepo customerRepo;
 
     public Customer signup(Customer customer) { // try catch use here
         if (customerRepo.existsByUsername(customer.getUsername())) {

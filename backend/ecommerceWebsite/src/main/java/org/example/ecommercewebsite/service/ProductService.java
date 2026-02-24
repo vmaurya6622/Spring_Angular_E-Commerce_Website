@@ -2,6 +2,7 @@ package org.example.ecommercewebsite.service;
 
 import org.example.ecommercewebsite.entities.Product;
 import org.example.ecommercewebsite.repositories.ProductRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -11,11 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ProductService {
-	private final ProductRepo productRepo;
-
-	public ProductService(ProductRepo productRepo) {
-		this.productRepo = productRepo;
-	}
+	@Autowired
+	private ProductRepo productRepo;
 
 	public Page<Product> getProducts(int page, int size) {
 		int pageNumber = Math.max(page, 0);
