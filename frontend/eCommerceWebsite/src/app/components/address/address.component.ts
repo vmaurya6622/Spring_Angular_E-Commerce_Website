@@ -4,6 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { BehaviorSubject, Observable, shareReplay } from 'rxjs';
+import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 
 interface Customer {
 	id: number;
@@ -16,7 +17,7 @@ interface Customer {
 @Component({
 	selector: 'app-address',
 	standalone: true,
-	imports: [CommonModule, FormsModule, RouterModule],
+	imports: [CommonModule, FormsModule, RouterModule,CommonFooterComponent],
 	templateUrl: './address.component.html',
 	styleUrls: ['./address.component.css']
 })

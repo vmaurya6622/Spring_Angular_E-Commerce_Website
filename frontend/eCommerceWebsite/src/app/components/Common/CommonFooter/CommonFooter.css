@@ -1,0 +1,38 @@
+footer {
+  background: #232f3e;
+  color: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding: 25px 100px;
+  margin-top: 40px;
+  border-radius: 12px;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+footer .about,
+footer .tnc {
+  flex: 1;
+  min-width: 220px;
+}
+
+footer h3 {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #ff9900;
+}
+
+footer p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #d1d5db;
+}
+
+@media (max-width: 768px) {
+  footer {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+}

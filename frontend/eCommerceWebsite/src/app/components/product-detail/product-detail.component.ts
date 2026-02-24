@@ -7,11 +7,12 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { Product } from '../../models/product.model';
+import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 
 @Component({
 	selector: 'app-product-detail',
 	standalone: true,
-	imports: [CommonModule, RouterModule, FormsModule],
+	imports: [CommonModule, RouterModule, FormsModule,CommonFooterComponent],
 	templateUrl: './product-detail.component.html',
 	styleUrls: ['./product-detail.component.css']
 })

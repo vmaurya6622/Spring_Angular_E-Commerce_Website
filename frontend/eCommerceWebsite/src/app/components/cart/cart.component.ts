@@ -8,6 +8,7 @@ import { CartItem } from '../../models/cart-item.model';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, map, shareReplay, switchMap, tap, catchError, startWith } from 'rxjs';
 import { of } from 'rxjs';
+import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 
 interface CartItemView {
 	id: number;
@@ -22,7 +23,7 @@ interface CartItemView {
 @Component({
 	selector: 'app-cart',
 	standalone: true,
-	imports: [CommonModule, FormsModule, RouterModule],
+	imports: [CommonModule, FormsModule, RouterModule,CommonFooterComponent],
 	templateUrl: './cart.component.html',
 	styleUrls: ['./cart.component.css']
 })
@@ -214,7 +215,7 @@ export class CartComponent implements OnInit {
 			}),
 			catchError((err: any) => {
 				console.error('Checkout error:', err);
-				alert(err.error?.message || 'Checkout failed. Please try again.');
+				alert(err.error?.message || 'Checkout failed maybe the product is now out of stock. Please try again...');
 				return of(null);
 			})
 		).subscribe();

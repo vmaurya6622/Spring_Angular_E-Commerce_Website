@@ -6,11 +6,12 @@ import { Router, RouterModule } from '@angular/router';
 import { CustomerService, Customer } from '../../services/customer.service';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import {  catchError, of ,tap} from 'rxjs';
+import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 
 @Component({
 	selector: 'app-profile',
 	standalone: true,
-	imports: [CommonModule, FormsModule, RouterModule],
+	imports: [CommonModule, FormsModule, RouterModule,CommonFooterComponent],
 	templateUrl: './profile.component.html',
 	styleUrls: ['./profile.component.css']
 })

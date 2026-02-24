@@ -1,118 +1,66 @@
 <div [class.dark]="darkMode" class="page">
+  <app-navbar
+    [darkMode]="darkMode"
+    [searchText]="searchText"
+    [isLoggedIn]="isLoggedIn"
+    [customerName]="customerName"
+    (searchChange)="onSearch($event)"
+    (themeToggle)="toggleTheme()"
+    (logoutEvent)="logout()"
+  >
+  </app-navbar>
 
-  <!-- NAVBAR -->
-  <nav class="navbar">
-    <div class="logo" (click)="goToHome()" style="cursor: pointer;">
-      <img src="/assets/logo.png" alt="InstaKart Logo">
-    </div>
-
-    <div class="search-bar">
-      <input type="text" [ngModel]="searchText" (ngModelChange)="onSearch($event)" placeholder="Search here...">
-      <button>Search</button>
-    </div>
-
-    <div class="greeting" *ngIf="isLoggedIn">
-      <span>Hi, {{ customerName }}! 👋</span>
-    </div>
-
-    <div class="nav-right">
-
-      <div class="user-menu" (mouseenter)="showDropdown=true" (mouseleave)="showDropdown=false">
-        <div class="user-circle">👤</div>
-        <div class="dropdown" *ngIf="showDropdown">
-          <div *ngIf="isLoggedIn">
-            <p (click)="navigateToProfile()" class="menu-item">Update Profile</p>
-            <p (click)="navigateToAddress()" class="menu-item">My Address</p>
-            <p (click)="navigateToOrders()" class="menu-item">Orders</p>
-            <p (click)="logout()" class="logout-btn">Logout</p>
-          </div>
-          <div *ngIf="!isLoggedIn">
-            <button class="dropdown-login-btn" (click)="login()">Login</button>
-          </div>
-        </div>
-      </div>
-
-      <button (click)="toggleTheme()">Switch Theme</button>
-      <button (click)="goToCart()">🛒 Cart</button>
-    </div>
-  </nav>
-  
   <section class="hero">
     <div class="hero-content">
       <h1>Shop the Latest Arrivals</h1>
       <p class="yoyo">Browse handpicked products and add them to your cart in one click.</p>
     </div>
-	</section>
-  <!-- BOOK GRID -->
+  </section>
 
-
-    <div class="grid">
-      <div class="book-card" *ngFor="let book of paginatedBooks$ | async">
-
-    <!-- Image -->
-    <div class="image-wrapper">
-      <img [src]="book.image" alt="">
-    </div>
-
-    <!-- Title -->
-    <h3 class="book-title">{{ book.title }}</h3>
-
-    <!-- Price -->
-    <div class="price">₹{{ book.price }}</div>
-
-    <!-- Rating -->
-    <div class="rating">
-      ⭐⭐⭐⭐½
-      <span class="rating-value">4.5</span>
-    </div>
-
-    <!-- Bottom Section -->
-    <div class="card-bottom">
-
-      <button 
-        *ngIf="book.stock > 0"
-        (click)="addToCart(book)"
-        class="add-btn">
-        Add to Cart
-      </button>
-
-      <div *ngIf="book.stock > 0" class="stock-box">
-        Stock: <span>{{ book.stock }}</span>
+  <div class="grid">
+    <div class="book-card" *ngFor="let book of paginatedBooks$ | async">
+      <!-- Image -->
+      <div class="image-wrapper">
+        <img [src]="book.image" alt="" />
       </div>
 
-      <div *ngIf="book.stock === 0" class="out-stock">
-        Out of Stock
+      <!-- Title -->
+      <h3 class="book-title">{{ book.title }}</h3>
+
+      <!-- Price -->
+      <div class="price">₹{{ book.price }}</div>
+
+      <!-- Rating -->
+      <div class="rating">
+        ⭐⭐⭐⭐½
+        <span class="rating-value">4.5</span>
       </div>
 
+      <!-- Bottom Section -->
+      <div class="card-bottom">
+        <button *ngIf="book.stock > 0" (click)="addToCart(book)" class="add-btn">
+          Add to Cart
+        </button>
+
+        <div *ngIf="book.stock > 0" class="stock-box">
+          Stock: <span>{{ book.stock }}</span>
+        </div>
+
+        <div *ngIf="book.stock === 0" class="out-stock">Out of Stock</div>
+      </div>
+
+      <button class="details-btn" (click)="viewDetails(book.id)">View Details</button>
     </div>
-
-    <button class="details-btn" (click)="viewDetails(book.id)">View Details</button>
-
   </div>
-
-  </div>
-
 
   <!-- PAGINATION -->
 
   <app-pagination
     [currentPage]="currentPage"
     [totalPages]="(totalPages$ | async) ?? 1"
-    (pageChange)="changePage($event)">
+    (pageChange)="changePage($event)"
+  >
   </app-pagination>
-  
 
-  <!-- FOOTER -->
-  <footer>
-    <div class="about">
-      <h4>About InstaKart</h4>
-      <p>Your one-stop online Shopping with the best deals and latest products.</p>
-    </div>
-
-    <div class="tnc">
-      <h4>Terms & Conditions</h4>
-      <p>All purchases are subject to company policies and regulations.</p>
-    </div>
-  </footer>
-
+  <app-common-footer></app-common-footer>
 </div>

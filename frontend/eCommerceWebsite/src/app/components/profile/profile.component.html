@@ -1,3 +1,4 @@
+<div class="page">
 <div class="profile-container" style="font-family: 'Segoe UI', sans-serif">
   <header class="header">
     <button class="back-btn" (click)="goBack()">← Back</button>
@@ -18,7 +19,6 @@
       </div>
       <button class="edit-btn" (click)="startEdit()" *ngIf="!(isEditing$ | async)">✏️ Edit Profile</button>
     </div>
-
     <div class="profile-content">
       <div *ngIf="!(isEditing$ | async)" class="view-mode">
         <div class="info-section">
@@ -184,4 +184,6 @@
       <button (click)="router.navigate(['/login'])" class="login-btn">Login</button>
     </div>
   </div>
+  <app-common-footer></app-common-footer>
+</div>
 </div>

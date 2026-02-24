@@ -4,6 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule, } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, map, shareReplay, switchMap, tap, catchError, of } from 'rxjs';
+import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 
 interface Customer {
 	id: number;
@@ -32,7 +33,7 @@ interface Order {
 @Component({
 	selector: 'app-orders',
 	standalone: true,
-	imports: [CommonModule, RouterModule],
+	imports: [CommonModule, RouterModule,CommonFooterComponent],
 	templateUrl: './orders.component.html',
 	styleUrls: ['./orders.component.css']
 })

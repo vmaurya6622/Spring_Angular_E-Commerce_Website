@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 
 @Component({
 	selector: 'app-signup',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, RouterModule],
+	imports: [CommonModule, ReactiveFormsModule, RouterModule,CommonFooterComponent],
 	templateUrl: './signup.component.html',
 	styleUrls: ['./signup.component.css']
 })

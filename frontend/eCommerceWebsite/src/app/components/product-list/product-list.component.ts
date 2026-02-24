@@ -6,7 +6,7 @@ import { BehaviorSubject, Observable, map, shareReplay, switchMap, tap, catchErr
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { Product } from '../../models/product.model';
-import { ProductComponent } from '../product/product.component';
+import { ProductComponent } from '../Common/product/product.component';
 
 @Component({
   selector: 'app-product-list',

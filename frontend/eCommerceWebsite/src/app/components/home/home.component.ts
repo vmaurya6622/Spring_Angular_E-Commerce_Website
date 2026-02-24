@@ -8,6 +8,8 @@ import { CartService } from '../../services/cart.service';
 import { Product } from '../../models/product.model';
 import { Observable, BehaviorSubject, combineLatest, map, shareReplay, switchMap, tap, catchError, of } from 'rxjs';
 import { PaginationComponent } from '../Common/pagination/pagination.component';
+import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
+import { NavbarComponent } from '../Common/navbar/navbar.component';
 
 interface Book {
 	id: number;
@@ -20,7 +22,7 @@ interface Book {
 @Component({
 	selector: 'app-home',
 	standalone: true,
-	imports: [CommonModule, FormsModule, PaginationComponent],
+	imports: [CommonModule, FormsModule, PaginationComponent, CommonFooterComponent, NavbarComponent],
 	templateUrl: './home.component.html',
 	styleUrls: ['./home.component.css']
 })

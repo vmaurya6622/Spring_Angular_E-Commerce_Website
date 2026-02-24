@@ -1,0 +1,35 @@
+<nav class="navbar">
+    <div class="logo" (click)="goToHome()" style="cursor: pointer;">
+      <img src="/assets/logo.png" alt="InstaKart Logo">
+    </div>
+
+    <div class="search-bar">
+      <input type="text" [ngModel]="searchText" (ngModelChange)="onSearch($event)" placeholder="Search here...">
+      <button>Search</button>
+    </div>
+
+    <div class="greeting" *ngIf="isLoggedIn">
+      <span>Hi, {{ customerName }}! 👋</span>
+    </div>
+
+    <div class="nav-right">
+
+      <div class="user-menu" (mouseenter)="showDropdown=true" (mouseleave)="showDropdown=false">
+        <div class="user-circle">👤</div>
+        <div class="dropdown" *ngIf="showDropdown">
+          <div *ngIf="isLoggedIn">
+            <p (click)="navigateToProfile()" class="menu-item">Update Profile</p>
+            <p (click)="navigateToAddress()" class="menu-item">My Address</p>
+            <p (click)="navigateToOrders()" class="menu-item">Orders</p>
+            <p (click)="logout()" class="logout-btn">Logout</p>
+          </div>
+          <div *ngIf="!isLoggedIn">
+            <button class="dropdown-login-btn" (click)="login()">Login</button>
+          </div>
+        </div>
+      </div>
+
+      <button (click)="toggleThemeClick()">Switch Theme</button>
+      <button (click)="goToCart()">🛒 Cart</button>
+    </div>
+  </nav>
