@@ -37,7 +37,7 @@ public class ProductService {
 	 *     It ensures that:
 	 *     <ul>
 	 *         <li>page number is not negative.</li>
-	 *         <li>page size is >=1 </li>
+	 *         <li>page size is >= 1 </li>
 	 *         <li>Results are sorted by productId in ascending order.</li>
 	 *     </ul>
 	 * </p>
