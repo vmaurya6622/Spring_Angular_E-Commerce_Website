@@ -6,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { CartItem } from '../../models/cart-item.model';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, firstValueFrom, map, shareReplay, switchMap, tap, catchError, startWith } from 'rxjs';
+import { BehaviorSubject, Observable, map, shareReplay, switchMap, tap, catchError, startWith } from 'rxjs';
 import { of } from 'rxjs';
 
 interface CartItemView {

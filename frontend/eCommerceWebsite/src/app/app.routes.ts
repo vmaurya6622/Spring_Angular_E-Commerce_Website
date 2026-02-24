@@ -11,6 +11,7 @@ import { OrdersComponent } from './components/orders/orders.component';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
+    { path: 'home', component: HomeComponent },
     { path: 'login', component: LoginComponent },
     { path: 'signup', component: SignupComponent },
     { path: 'products', component: ProductListComponent },
@@ -19,5 +20,5 @@ export const routes: Routes = [
     { path: 'profile', component: ProfileComponent },
     { path: 'address', component: AddressComponent },
     { path: 'orders', component: OrdersComponent },
-    { path: '**', redirectTo: '' }
+    { path: '**', redirectTo: '' }// default route for any unknown paths
 ];

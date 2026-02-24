@@ -1,0 +1,58 @@
+/* PAGINATION WRAPPER */
+.pagination {
+  text-align: center;
+  margin: 30px 0 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* PAGINATION BUTTON */
+.pagination button {
+  padding: 10px 16px;
+  border-radius: 25px;
+  border: none;
+  background: #f0f0f0;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 40px;
+}
+
+/* HOVER EFFECT */
+.pagination button:hover:not(:disabled) {
+  transform: scale(1.1);
+  background: #ff9900;
+  color: white;
+}
+
+/* ACTIVE PAGE */
+.pagination button.active {
+  background: #ff9900;
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 153, 0, 0.4);
+}
+
+/* DISABLED BUTTON */
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* DARK MODE SUPPORT */
+.dark .pagination button {
+  background: #2a2a2a;
+  color: white;
+}
+
+.dark .pagination button.active {
+  background: #e2a46b;
+  color: #121212;
+}
+
+.dark .pagination button:hover:not(:disabled) {
+  background: #e66a00;
+}

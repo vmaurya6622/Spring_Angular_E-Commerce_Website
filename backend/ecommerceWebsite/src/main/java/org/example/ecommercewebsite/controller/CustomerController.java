@@ -2,6 +2,7 @@ package org.example.ecommercewebsite.controller;
 
 import org.example.ecommercewebsite.entities.Customer;
 import org.example.ecommercewebsite.service.CustomerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,11 +14,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
-    private final CustomerService customerService;
-
-    public CustomerController(CustomerService customerService) {
-        this.customerService = customerService;
-    }
+    @Autowired
+    private CustomerService customerService;
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Customer customer) {

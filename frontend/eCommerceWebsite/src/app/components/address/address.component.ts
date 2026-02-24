@@ -84,7 +84,7 @@ export class AddressComponent implements OnInit {
 		this.newAddress = '';
 	}
 
-	private showMessage(type: 'success' | 'error', message: string, duration = 3000): void {
+	private showMessage(type: 'success' | 'error', message: string, duration = 1000): void {
 		this.messageBox = { type, message };
 		setTimeout(() => {
 			this.messageBox = null;

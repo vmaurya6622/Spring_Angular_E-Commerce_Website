@@ -7,6 +7,7 @@ import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { Product } from '../../models/product.model';
 import { Observable, BehaviorSubject, combineLatest, map, shareReplay, switchMap, tap, catchError, of } from 'rxjs';
+import { PaginationComponent } from '../Common/pagination/pagination.component';
 
 interface Book {
 	id: number;
@@ -19,7 +20,7 @@ interface Book {
 @Component({
 	selector: 'app-home',
 	standalone: true,
-	imports: [CommonModule, FormsModule],
+	imports: [CommonModule, FormsModule, PaginationComponent],
 	templateUrl: './home.component.html',
 	styleUrls: ['./home.component.css']
 })
@@ -66,7 +67,7 @@ export class HomeComponent {
 		}),
 		shareReplay(1)
 	);
-	
+
 	private loadProductsTrigger = new BehaviorSubject<void>(undefined);
 	private loadCartItemsTrigger = new BehaviorSubject<void>(undefined);
 	private addToCartTrigger = new BehaviorSubject<Book | null>(null);
@@ -113,12 +114,12 @@ export class HomeComponent {
 				switchMap(cartItems => {
 					const existingItem = cartItems.find(item => item.product.id === book.id);
 					const currentQuantity = existingItem ? existingItem.quantity : 0;
-					
+
 					if (currentQuantity >= book.stock) {
 						alert(`Only ${book.stock} items available. You already have ${currentQuantity} in cart.`);
 						return of(null);
 					}
-					
+
 					return this.cartService.addItem(book.id, 1).pipe(
 						tap(() => {
 							this.productsInCart.add(book.id);
@@ -167,11 +168,8 @@ export class HomeComponent {
 	}
 
 	changePage(page: number): void {
-		const totalPagesValue = this.totalPages;
-		if (page >= 1 && page <= totalPagesValue) {
-			this.currentPage = page;
-			this.currentPageSubject.next(page);
-		}
+		this.currentPage = page;
+		this.currentPageSubject.next(page);
 	}
 
 	toggleTheme(): void {

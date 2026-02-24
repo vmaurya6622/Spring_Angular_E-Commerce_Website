@@ -1,10 +1,11 @@
-import { firstValueFrom } from 'rxjs';
 import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CustomerService, Customer } from '../../services/customer.service';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import {  catchError, of ,tap} from 'rxjs';
 
 @Component({
 	selector: 'app-profile',
@@ -14,10 +15,10 @@ import { CustomerService, Customer } from '../../services/customer.service';
 	styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
-	customer: Customer | null = null;
-	isEditing: boolean = false;
-	isSaving: boolean = false;
-	messageBox: { type: 'success' | 'error', message: string } | null = null;
+	customer$ = new BehaviorSubject<Customer | null>(null);
+	isEditing$ = new BehaviorSubject<boolean>(false);
+	isSaving$ = new BehaviorSubject<boolean>(false);
+	messageBox$ = new BehaviorSubject<{ type: 'success' | 'error', message: string } | null>(null);
 
 	constructor(
 		public router: Router,
@@ -30,72 +31,62 @@ export class ProfileComponent implements OnInit {
 	}
 
 	private loadCustomerProfile(): void {
-		if (isPlatformBrowser(this.platformId)) {
-			let customerData = localStorage.getItem('customer');
-			// Fallback to sessionStorage if not in localStorage
-			if (!customerData) {
-				customerData = sessionStorage.getItem('customer');
-				if (customerData) {
-					console.log('Found customer in sessionStorage, saving to localStorage');
-					localStorage.setItem('customer', customerData);
-				}
-			}
+		if (!isPlatformBrowser(this.platformId)) return;
+		let customerData = localStorage.getItem('customer') || sessionStorage.getItem('customer');
+		if (customerData) {
+			try {
+				this.customer$.next(JSON.parse(customerData));
 
-			if (customerData) {
-				try {
-					this.customer = JSON.parse(customerData);
-					console.log('Customer loaded:', this.customer);
-				} catch (e) {
-					console.error('Error parsing customer data:', e);
-					this.customer = null;
-				}
-			} else {
-				console.warn('No customer data in localStorage or sessionStorage');
-				this.customer = null;
+			} catch {
+				this.customer$.next(null);
 			}
+		} else {
+			this.customer$.next(null);
 		}
 	}
 
 	startEdit(): void {
-		this.isEditing = true;
+		this.isEditing$.next(true);
 	}
 
 	cancelEdit(): void {
-		this.isEditing = false;
-		this.messageBox = null;
+		this.isEditing$.next(false);
+		this.messageBox$.next(null);
 		this.loadCustomerProfile();
 	}
 
-	async saveProfile(): Promise<void> {
-		if (!this.customer) return;
-		this.isSaving = true;
-		this.messageBox = null;
-		try {
-			const response: any = await firstValueFrom(this.customerService.updateCustomer(this.customer.id, this.customer));
-			const updatedCustomer = response.customer || response; // Handle both { customer: ... } and direct customer response
-			if (isPlatformBrowser(this.platformId)) {
-				localStorage.setItem('customer', JSON.stringify(updatedCustomer));
-			}
-			this.customer = updatedCustomer;
-			this.isEditing = false;
-			this.showMessage('success', 'Profile updated successfully!');
-		} catch (err: any) {
-			console.error('Error updating profile:', err);
-			this.showMessage('error', err.error?.message || 'Failed to update profile. Please try again.');
-		} finally {
-			this.isSaving = false;
-		}
+	saveProfile():void{
+		const customer = this.customer$.value;
+		if(!customer)return;
+		this.isSaving$.next(true);
+		this.messageBox$.next(null);
+		this.customerService.updateCustomer(customer.id, customer).pipe(
+			tap((response:any)=>{
+				const updatedCustomer = response.customer || response;
+				if(isPlatformBrowser(this.platformId)) {
+					localStorage.setItem('customer',JSON.stringify(updatedCustomer));
+				}
+				this.customer$.next(updatedCustomer);
+				this.isEditing$.next(false);
+				this.showMessage('success','Profile updated successfully!');
+			}),
+			catchError((err)=>{
+				this.showMessage(
+					'error',err.error?.message || 'Failed to update the profile. Please try again.'
+				);
+				return of(null);
+			}),tap(() => this.isSaving$.next(false))).subscribe();
 	}
-
+	
 	private showMessage(
 		type: 'success' | 'error',
 		message: string,
-		duration = 3000
+		duration = 1000
 	): void {
-		this.messageBox = { type, message };
+		this.messageBox$.next({ type, message });
 
 		setTimeout(() => {
-			this.messageBox = null;
+			this.messageBox$.next(null);
 		}, duration);
 	}
 	logout(): void {

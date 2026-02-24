@@ -10,6 +10,34 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+/**
+ * Service class responsible for handing order-related operations.
+ * <p>
+ *     This service usually manages:
+ *      <ul>
+ *          <li>
+ *              Checkout processes.
+ *          </li>
+ *          <li>
+ *              Order creation form the cart
+ *          </li>
+ *          <li>
+ *              Stock validation and deduction in case of successful checkout.
+ *          </li>
+ *          <li>
+ *              fetching customer details
+ *          </li>
+ *          <li>
+ *              fectching order by its ID.
+ *          </li>
+ *      </ul>
+ * </p>
+ * <p>
+ *     The checkout process is purely transactional to ensure data consistency. if any step fails,
+ *     the entire transaction is rolled back.
+ * </p>
+ */
+
 @Service
 public class OrderService {
     @Autowired
@@ -23,17 +51,56 @@ public class OrderService {
     @Autowired
     private ProductRepo productRepo;
 
+    /**
+     * It helps to process the checkout for a customer.
+     * <p>
+     *     This method:
+     *     <ul>
+     *         <li>
+     *             Validates customer existence
+     *         </li>
+     *         <li>
+     *             validates cart existence and its non-empty state.
+     *         </li>
+     *         <li>
+     *             it checks the stock availability for each product
+     *         </li>
+     *         <li>
+     *             Creates order and OrderItem entries
+     *         </li>
+     *         <li>
+     *             Reduces the product available stock
+     *         </li>
+     *         <li>
+     *             Calculates the subtotal cost incl. tax and gives total.
+     *         </li>
+     *         <li>
+     *             Clears the cart after successful order creation/ checkout.
+     *         </li>
+     *     </ul>
+     * </p>
+     * @param customerId customerID of the customer.
+     * @param paymentMethod selected payment method by the user.
+     * @param shippingCost which is 0 by default but can be changed.
+     * @return the saved Order entity
+     * @throws ResponseStatusException if the customer/ cart is not found, cart is empty, or
+     *          insufficient stocks.
+     */
+
     @Transactional
     public Order checkout(Long customerId, String paymentMethod, Double shippingCost) {
         System.out.println("Checkout started for customer ID: " + customerId);
-        // Get customer
         Customer customer = customerRepo.findById(customerId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
         System.out.println("Customer found: " + customer.getName());
-
-        // Get customer's cart
-        CartManager cart = cartRepo.findByCustomer(customer)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found"));
+        List<CartManager> carts = cartRepo.findAllByCustomerWithItems(customer);
+        if (carts.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found");
+        }
+        CartManager cart = carts.stream()
+            .filter(c -> c.getItems() != null && !c.getItems().isEmpty())
+            .findFirst()
+            .orElse(carts.get(0));
         System.out.println("Cart found with " + cart.getItems().size() + " items");
 
         if (cart.getItems().isEmpty()) {
@@ -94,6 +161,12 @@ public class OrderService {
         return savedOrder;
     }
 
+    /**
+     * it Retrieves all the orders given by a customer
+     * @param customerId customer id of the user.
+     * @return list of Order Entities.
+     * @throws ResponseStatusException if the requested customer not found!
+     */
     public List<Order> getCustomerOrders(Long customerId) {
         System.out.println("Fetching orders for customer ID: " + customerId);
         Customer customer = customerRepo.findById(customerId)
@@ -106,6 +179,13 @@ public class OrderService {
         }
         return orders;
     }
+
+    /**
+     * Retrieves a specific order of the customer by its ID.
+      * @param orderId order id of the customer
+     * @return the order entity
+     * @throws ResponseStatusException if the requested order is not found.
+     */
 
     public Order getOrderById(Long orderId) {
         return orderRepo.findById(orderId)

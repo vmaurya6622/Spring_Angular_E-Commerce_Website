@@ -2,6 +2,7 @@ package org.example.ecommercewebsite.controller;
 
 import org.example.ecommercewebsite.entities.CartManager;
 import org.example.ecommercewebsite.service.CartService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
-	private final CartService cartService;
-
-	public CartController(CartService cartService) {
-		this.cartService = cartService;
-	}
+	@Autowired
+	private CartService cartService;
 
 	@GetMapping("/{customerId}")
 	public CartManager getCart(@PathVariable Long customerId) {

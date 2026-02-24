@@ -9,10 +9,43 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+/**
+ * <p>
+ *     This service mainly facilitates:
+ *     <ul>
+ *         <li>
+ *             Customer Registration (signup)
+ *         </li>
+ *         <li>
+ *             Customer Authentication (login)
+ *         </li>
+ *         <li>
+ *             Fetching customer details
+ *         </li>
+ *         <li>
+ *             updating the customer profile information
+ *         </li>
+ *     </ul>
+ * </p>
+ * <p>
+ *     Business validation such as duplicate username/email checks are handled at the service
+ *     layer.
+ * </p>
+ */
 @Service
 public class CustomerService {
     @Autowired
     private  CustomerRepo customerRepo;
+
+    /**
+     * Registers a new customer
+     * <p>
+     *     it validates that username and email are unique before saving them
+     * </p>
+     * @param customer it is the entity which contains registration details
+     * @return returns the saved entity.
+     * @throws RuntimeException if the username or email already exists.
+     */
 
     public Customer signup(Customer customer) { // try catch use here
         if (customerRepo.existsByUsername(customer.getUsername())) {
@@ -23,6 +56,17 @@ public class CustomerService {
         }
         return customerRepo.save(customer);
     }
+
+    /**
+     * it is used to authenticate a customer using username or email and password
+     * <p>
+     *     First it attempts to find the customer by its username.
+     *     if not found, it attempts to find by email.
+     * </p>
+     * @param usernameOrEmail Username or email of the customer.
+     * @param password password of the customer (plain text)
+     * @return Optional containing customer if authentication succeeds otherwise Optional.empty() is returned.
+     */
 
     public Optional<Customer> login(String usernameOrEmail, String password) {
         Optional<Customer> customer = customerRepo.findByUsername(usernameOrEmail);
@@ -36,9 +80,27 @@ public class CustomerService {
         return Optional.empty();
     }
 
+    /**
+     * Retrieves a customer by its ID.
+     * @param id the ID of the customer
+     * @return Optional containing customer if found, otherwise it returns Optional,empty().
+     */
+
     public Optional<Customer> findById(Long id) {
         return customerRepo.findById(id);
     }
+
+    /**
+     * Updates an existing customer's profile information and send the data to backend DB.
+     * <p>
+     *     in this piece of code, Only non-null fields from {@code customerDetails} are updates
+     *     (partial update behaviour)
+     * </p>
+     * @param id  id of the customer to update.
+     * @param customerDetails it contains the customer object which contains updated fields.
+     * @return the updated customer entity.
+     * @throws ResponseStatusException if the customer is not found anywhere.
+     */
 
     public Customer updateCustomer(Long id, Customer customerDetails) {
         Customer customer = customerRepo.findById(id)

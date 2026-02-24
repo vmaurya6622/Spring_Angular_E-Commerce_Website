@@ -2,6 +2,7 @@ package org.example.ecommercewebsite.controller;
 
 import org.example.ecommercewebsite.entities.Order;
 import org.example.ecommercewebsite.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -9,11 +10,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
-    private final OrderService orderService;
-
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
+    @Autowired
+    private  OrderService orderService;
 
     @PostMapping("/checkout")
     public Order checkout(@RequestBody CheckoutRequest request) {

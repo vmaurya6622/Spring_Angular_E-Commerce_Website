@@ -5,22 +5,22 @@
     <button class="logout-btn" (click)="logout()">Logout</button>
   </header>
 
-  <div class="message-box" *ngIf="messageBox" [ngClass]="messageBox.type">
+  <div class="message-box" *ngIf="messageBox$ | async as messageBox" [ngClass]="messageBox.type">
     {{ messageBox.message }}
   </div>
 
-  <div class="profile-card" *ngIf="customer">
+  <div class="profile-card" *ngIf="customer$ | async as customer">
     <div class="card-header">
       <div class="avatar">👤</div>
       <div class="user-info">
         <h2>{{ customer.name }}</h2>
         <p>User Id: {{ customer.username }}</p>
       </div>
-      <button class="edit-btn" (click)="startEdit()" *ngIf="!isEditing">✏️ Edit Profile</button>
+      <button class="edit-btn" (click)="startEdit()" *ngIf="!(isEditing$ | async)">✏️ Edit Profile</button>
     </div>
 
     <div class="profile-content">
-      <div *ngIf="!isEditing" class="view-mode">
+      <div *ngIf="!(isEditing$ | async)" class="view-mode">
         <div class="info-section">
           <h3>Contact Information</h3>
           <div class="info-row">
@@ -62,7 +62,7 @@
         </div>
       </div>
 
-      <div *ngIf="isEditing" class="edit-mode">
+      <div *ngIf="isEditing$ | async" class="edit-mode">
         <form (ngSubmit)="saveProfile()">
           <div class="form-section">
             <h3>Edit Profile</h3>
@@ -158,15 +158,15 @@
             <button 
               type="submit" 
               class="save-btn" 
-              [disabled]="isSaving"
+              [disabled]="isSaving$ | async"
             >
-              {{ isSaving ? 'Saving...' : 'Save Changes' }}
+              {{ (isSaving$ | async) ? 'Saving...' : 'Save Changes' }}
             </button>
             <button 
               type="button" 
               class="cancel-btn" 
               (click)="cancelEdit()"
-              [disabled]="isSaving"
+              [disabled]="isSaving$ | async"
             >
               Cancel
             </button>
@@ -176,7 +176,7 @@
     </div>
   </div>
 
-  <div *ngIf="!customer" class="no-data">
+  <div *ngIf="!(customer$ | async)" class="no-data">
     <h2>Profile Not Available</h2>
     <p>It looks like you need to log in to view your profile.</p>
     <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">

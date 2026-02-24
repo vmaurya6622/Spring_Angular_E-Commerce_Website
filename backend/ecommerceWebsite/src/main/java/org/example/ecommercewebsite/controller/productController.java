@@ -2,6 +2,7 @@ package org.example.ecommercewebsite.controller;
 
 import org.example.ecommercewebsite.entities.Product;
 import org.example.ecommercewebsite.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,11 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/products")
 public class productController {
-	private final ProductService productService;
-
-	public productController(ProductService productService) {
-		this.productService = productService;
-	}
+	@Autowired
+	private ProductService productService;
 
 	@GetMapping
 	public Page<Product> getProducts(
