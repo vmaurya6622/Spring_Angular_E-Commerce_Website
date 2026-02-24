@@ -3,11 +3,11 @@
   <!-- NAVBAR -->
   <nav class="navbar">
     <div class="logo" (click)="goToHome()" style="cursor: pointer;">
-      <img src="assets/logo.png" alt="InstaKart Logo">
+      <img src="/assets/logo.png" alt="InstaKart Logo">
     </div>
 
     <div class="search-bar">
-      <input type="text" [(ngModel)]="searchText" placeholder="Search here...">
+      <input type="text" [ngModel]="searchText" (ngModelChange)="onSearch($event)" placeholder="Search here...">
       <button>Search</button>
     </div>
 
@@ -46,13 +46,10 @@
   <!-- BOOK GRID -->
 
 
-  <div class="grid">
-      <div class="book-card" *ngFor="let book of paginatedBooks">
+    <div class="grid">
+      <div class="book-card" *ngFor="let book of paginatedBooks$ | async">
 
     <!-- Image -->
-     <div class="cart-indicator" *ngIf="isInCart(book.id)">
-        <div class="checkmark">✓</div>
-      </div>
     <div class="image-wrapper">
       <img [src]="book.image" alt="">
     </div>
@@ -97,18 +94,19 @@
 
 
   <!-- PAGINATION -->
+
   <div class="pagination">
     <button (click)="changePage(currentPage - 1)">Prev</button>
-
-    <button 
-      *ngFor="let page of [].constructor(totalPages); let i = index"
-      (click)="changePage(i + 1)"
-      [class.active]="currentPage === i + 1">
-      {{ i + 1 }}
+    <button
+      *ngFor="let page of (pages$ | async) ?? []"
+      (click)="changePage(page)"
+      [class.active]="currentPage === page"
+    >
+      {{ page }}
     </button>
-
     <button (click)="changePage(currentPage + 1)">Next</button>
   </div>
+  
 
   <!-- FOOTER -->
   <footer>

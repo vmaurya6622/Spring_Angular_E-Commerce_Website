@@ -1,9 +1,9 @@
+import { firstValueFrom } from 'rxjs';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { validate } from '@angular/forms/signals';
 
 @Component({
 	selector: 'app-signup',
@@ -24,7 +24,7 @@ export class SignupComponent {
 	) {
 		this.signupForm = this.fb.group({
 			name: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[a-zA-Z\s]+$/)]], // can fill only letters and spaces
-			age: ['', [Validators.required, Validators.min(1), Validators.max(120), Validators.pattern(/^(?!.*[a-zA-Z]).*$/)]], 
+			age: ['', [Validators.required, Validators.min(1), Validators.max(120), Validators.pattern(/^\d+$/)]], 
 			sex: ['', Validators.required],
 			dob: ['', Validators.required],
 			mobile: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]], // can fill only 10 digit number with 0-9 digits
@@ -35,26 +35,23 @@ export class SignupComponent {
 		});
 	}
 
-	onSubmit(): void {
-		if (this.signupForm.valid) {
-			this.errorMessage = '';
-			this.successMessage = '';
-
-			this.http.post('http://localhost:8080/api/customers/signup', this.signupForm.value)
-				.subscribe({
-					next: (response: any) => {
-						this.successMessage = 'Signup successful! Redirecting to login...';
-						this.signupForm.reset();
-						setTimeout(() => {
-							this.router.navigate(['/login']);
-						}, 2000);
-					},
-					error: (error) => {
-						this.errorMessage = error.error.message || 'Signup failed. Please try again.';
-					}
-				});
-		} else {
-			this.errorMessage = 'Please fill all required fields correctly.';
+	async onSubmit():Promise<void>{
+		if(this.signupForm.invalid) {
+			this.errorMessage = 'Please fill all fields correctly.';
+			return;
+		}
+		this.errorMessage = '';
+		this.successMessage = '';
+		try{
+			await firstValueFrom(this.http.post('http://localhost:8080/api/customers/signup', this.signupForm.value));
+			this.successMessage = 'Signup successful! Redirecting to login...';
+			this.signupForm.reset();
+			setTimeout(() => {
+				this.router.navigate(['/login']);
+			}, 2000);
+		}catch(error:any){
+			console.error('Signup error:', error);
+			this.errorMessage = error.error?.message || 'Signup failed. Please try again.';
 		}
 	}
 

@@ -3,7 +3,7 @@
   <!-- NAVBAR -->
   <nav class="navbar">
     <div class="logo" (click)="goToHome()" style="cursor: pointer;">
-      <img src="assets/logo.png" alt="InstaKart Logo">
+      <img src="/assets/logo.png" alt="InstaKart Logo">
     </div>
 
     <div class="search-bar">
@@ -39,12 +39,14 @@
   <div class="cart-container">
     <h1 class="cart-title">🛒 Shopping Cart</h1>
 
-    <div *ngIf="cartItems.length === 0 && !isLoading" class="empty-cart">
+    <ng-container *ngIf="cartItems$ | async as cartItems">
+
+    <div *ngIf="cartItems.length === 0 && !(isLoading$ | async)" class="empty-cart">
       <p>Your cart is empty</p>
       <button class="continue-shopping" (click)="continueShopping()">Continue Shopping</button>
     </div>
 
-    <div *ngIf="isLoading && cartItems.length === 0" class="loading">
+    <div *ngIf="(isLoading$ | async) && cartItems.length === 0" class="loading">
       <p>Loading cart items...</p>
     </div>
 
@@ -89,7 +91,7 @@
           <h3>Order Summary</h3>
           <div class="summary-row">
             <span>Subtotal:</span>
-            <span>₹{{ subtotal }}</span>
+            <span>₹{{ subtotal$ | async }}</span>
           </div>
           <div class="summary-row">
             <span>Shipping:</span>
@@ -97,11 +99,11 @@
           </div>
           <div class="summary-row">
             <span>Tax (10%):</span>
-            <span>₹{{ tax }}</span>
+            <span>₹{{ tax$ | async }}</span>
           </div>
           <div class="summary-row total">
             <span>Total:</span>
-            <span>₹{{ total }}</span>
+            <span>₹{{ total$ | async }}</span>
           </div>
         </div>
 
@@ -133,6 +135,7 @@
         <button class="continue-btn" routerLink="/">Continue Shopping</button>
       </div>
     </div>
+    </ng-container>
   </div>
 
   <!-- FOOTER -->

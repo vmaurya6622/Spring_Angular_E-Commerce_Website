@@ -1,7 +1,7 @@
 <div class="page">
 	<nav class="navbar">
 		<div class="logo" (click)="goToHome()" style="cursor: pointer;">
-			<img src="assets/logo.png" alt="InstaKart Logo">
+			<img src="/assets/logo.png" alt="InstaKart Logo">
 		</div>
 		<div class="nav-right">
 			<button routerLink="/">Home</button>
@@ -15,27 +15,29 @@
 		<p>Browse handpicked products and add them to your cart in one click.</p>
 	</section>
 
-	<div *ngIf="isLoading" class="status">Loading products...</div>
-	<div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+	<div *ngIf="isLoading$ | async" class="status">Loading products...</div>
+	<div *ngIf="errorMessage$ | async as errorMessage" class="status error">{{ errorMessage }}</div>
 
-	<div class="grid" *ngIf="!isLoading && !errorMessage">
+	<div class="grid" *ngIf="!(isLoading$ | async) && !(errorMessage$ | async)">
 		<app-product
-			*ngFor="let product of products"
+			*ngFor="let product of (products$ | async) ?? []"
 			[product]="product"
 			(addToCart)="onAddToCart($event)"
 			(viewDetails)="onViewDetails($event)"
 		></app-product>
 	</div>
 
-	<div class="pagination" *ngIf="totalPages > 1">
+	<div class="pagination" *ngIf="(totalPages$ | async) as totalPages">
+		<ng-container *ngIf="totalPages > 1">
 		<button (click)="goToPage(page - 1)" [disabled]="page === 0">Prev</button>
 		<button
-			*ngFor="let i of [].constructor(totalPages); let index = index"
+			*ngFor="let index of (pages$ | async) ?? []"
 			(click)="goToPage(index)"
 			[class.active]="page === index"
 		>
 			{{ index + 1 }}
 		</button>
 		<button (click)="goToPage(page + 1)" [disabled]="page + 1 >= totalPages">Next</button>
+		</ng-container>
 	</div>
 </div>

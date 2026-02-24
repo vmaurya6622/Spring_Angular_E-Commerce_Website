@@ -1,7 +1,7 @@
 <div class="detail-page" [class.dark]="darkMode">
 	<nav class="navbar">
 		<div class="logo" (click)="goToHome()" style="cursor: pointer;">
-			<img src="assets/logo.png" alt="InstaKart Logo">
+			<img src="/assets/logo.png" alt="InstaKart Logo">
 		</div>
 
 		<div class="search-bar">
@@ -34,10 +34,10 @@
 		</div>
 	</nav>
 
-	<div *ngIf="isLoading" class="status">Loading product...</div>
-	<div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+	<div *ngIf="isLoading$ | async" class="status">Loading product...</div>
+	<div *ngIf="errorMessage$ | async as errorMessage" class="status error">{{ errorMessage }}</div>
 
-	<section *ngIf="product" class="detail-card">
+	<section *ngIf="product$ | async as product" class="detail-card">
 		<div class="image-section">
 			<img [src]="product.imageUrl" [alt]="product.name" class="detail-image">
 		</div>
@@ -66,7 +66,7 @@
 				<p class="description">{{ product.description }}</p>
 			</div>
 
-			<div class="cart-indicator" *ngIf="isInCart">
+			<div class="cart-indicator" *ngIf="isInCart$ | async">
 				<span class="checkmark">✓</span>
 				<span class="cart-text">Item in cart</span>
 			</div>

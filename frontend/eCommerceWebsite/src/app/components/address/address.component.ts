@@ -1,171 +1,157 @@
-import { Component, OnInit, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { BehaviorSubject, Observable, shareReplay } from 'rxjs';
 
 interface Customer {
-  id: number;
-  name: string;
-  email: string;
-  address: string;
-  addresses?: string[];
+	id: number;
+	name: string;
+	email: string;
+	address: string;
+	addresses?: string[];
 }
 
 @Component({
-  selector: 'app-address',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
-  templateUrl: './address.component.html',
-  styleUrls: ['./address.component.css']
+	selector: 'app-address',
+	standalone: true,
+	imports: [CommonModule, FormsModule, RouterModule],
+	templateUrl: './address.component.html',
+	styleUrls: ['./address.component.css']
 })
 export class AddressComponent implements OnInit {
-  customer: Customer | null = null;
-  newAddress: string = '';
-  isAdding: boolean = false;
-  isSaving: boolean = false;
-  addresses: string[] = [];
-  messageBox: { type: 'success' | 'error', message: string } | null = null;
+	newAddress: string = '';
+	isAdding: boolean = false;
+	isSaving: boolean = false;
+	private customerSubject = new BehaviorSubject<Customer | null>(null);
+	customer$: Observable<Customer | null> = this.customerSubject.asObservable().pipe(shareReplay(1));
+	private addressesSubject = new BehaviorSubject<string[]>([]);
+	addresses$: Observable<string[]> = this.addressesSubject.asObservable().pipe(shareReplay(1));
+	messageBox: { type: 'success' | 'error', message: string } | null = null;
 
-  constructor(
-    public router: Router,
-    private cdr: ChangeDetectorRef,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+	constructor(
+		public router: Router,
+		@Inject(PLATFORM_ID) private platformId: Object
+	) { }
 
-  ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const customerData = localStorage.getItem('customer');
-      if (customerData) {
-        this.customer = JSON.parse(customerData);
-        this.initializeAddresses();
-      } else {
-        this.router.navigate(['/login']);
-      }
-    }
-  }
+	ngOnInit(): void {
+		if (!isPlatformBrowser(this.platformId)) return;
+		const customerData = localStorage.getItem('customer');
+		if (!customerData) {
+			this.router.navigate(['/login']);
+			return;
+		}
+		this.customerSubject.next(JSON.parse(customerData));
+		this.initializeAddresses();
+	}
 
-  private initializeAddresses(): void {
-    if (!this.customer) {
-      return;
-    }
-    if (Array.isArray(this.customer.addresses) && this.customer.addresses.length > 0) {
-      this.addresses = [...this.customer.addresses];
-      if (!this.customer.address || !this.addresses.includes(this.customer.address)) {
-        this.customer.address = this.addresses[0];
-      }
-    } else if (this.customer.address) {
-      this.addresses = [this.customer.address];
-    } else {
-      this.addresses = [];
-    }
-    this.persistCustomer();
-    this.cdr.detectChanges();
-  }
+	private initializeAddresses(): void {
+		const customer = this.customerSubject.value;
+		if (!customer) {
+			return;
+		}
+		if (Array.isArray(customer.addresses) && customer.addresses.length > 0) {
+			this.addressesSubject.next([...customer.addresses]);
+			if (!customer.address || !this.addressesSubject.value.includes(customer.address)) {
+				customer.address = this.addressesSubject.value[0];
+			}
+		} else if (customer.address) {
+			this.addressesSubject.next([customer.address]);
+		} else {
+			this.addressesSubject.next([]);
+		}
+		this.customerSubject.next(customer);
+		this.persistCustomer();
+	}
 
-  private persistCustomer(): void {
-    if (!this.customer) {
-      return;
-    }
-    this.customer.addresses = [...this.addresses];
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem('customer', JSON.stringify(this.customer));
-    }
-  }
+	private persistCustomer(): void {
+		const customer = this.customerSubject.value;
+		if (!customer || !isPlatformBrowser(this.platformId)) return;
 
-  startAddAddress(): void {
-    this.isAdding = true;
-    this.newAddress = '';
-  }
+		customer.addresses = [...this.addressesSubject.value];
+		this.customerSubject.next(customer);
+		localStorage.setItem('customer', JSON.stringify(customer));
+	}
 
-  cancelAddAddress(): void {
-    this.isAdding = false;
-    this.newAddress = '';
-  }
+	startAddAddress(): void {
+		this.isAdding = true;
+		this.newAddress = '';
+	}
 
-  addAddress(): void {
-    const trimmedAddress = this.newAddress.trim();
-    if (!trimmedAddress) {
-      this.messageBox = { type: 'error', message: 'Please enter an address' };
-      return;
-    }
+	cancelAddAddress(): void {
+		this.isAdding = false;
+		this.newAddress = '';
+	}
 
-    this.isSaving = true;
-    
-    setTimeout(() => {
-      this.addresses.push(trimmedAddress);
-      if (this.customer && !this.customer.address) {
-        this.customer.address = trimmedAddress;
-      }
-      this.persistCustomer();
-      this.isSaving = false;
-      this.isAdding = false;
-      this.cdr.detectChanges();
-      this.messageBox = {
-        type: 'success',
-        message: 'Address added successfully!'
-      };
-      setTimeout(() => {
-        this.messageBox = null;
-        this.cdr.detectChanges();
-      }, 3000);
-    }, 1000);
-  }
+	private showMessage(type: 'success' | 'error', message: string, duration = 3000): void {
+		this.messageBox = { type, message };
+		setTimeout(() => {
+			this.messageBox = null;
+		}, duration);
+	}
 
-  deleteAddress(index: number): void {
-    if (this.addresses.length <= 1) {
-      this.messageBox = {
-        type: 'error',
-        message: 'At least one address is required'
-      };
-      this.cdr.detectChanges();
-      setTimeout(() => {
-        this.messageBox = null;
-        this.cdr.detectChanges();
-      }, 3000);
-      return;
-    }
-    const removedAddress = this.addresses[index];
-    this.addresses.splice(index, 1);
-    if (this.customer?.address === removedAddress) {
-      this.customer.address = this.addresses[0] ?? '';
-    }
-    this.persistCustomer();
-    this.cdr.detectChanges();
-    this.messageBox = {
-      type: 'success',
-      message: 'Address deleted successfully!'
-    };
-    setTimeout(() => {
-      this.messageBox = null;
-      this.cdr.detectChanges();
-    }, 3000);
-  }
+	addAddress(): void {
+		const trimmedAddress = this.newAddress.trim();
+		if (!trimmedAddress) {
+			this.showMessage('error', 'Please enter an address');
+			return;
+		}
 
-  selectAddress(address: string): void {
-    if (this.customer) {
-      this.customer.address = address;
-      this.persistCustomer();
-      this.cdr.detectChanges();
-      this.messageBox = {
-        type: 'success',
-        message: 'Address selected as default!'
-      };
-      setTimeout(() => {
-        this.messageBox = null;
-        this.cdr.detectChanges();
-      }, 2000);
-    }
-  }
+		this.isSaving = true;
 
-  logout(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('customer');
-    }
-    this.router.navigate(['/login']);
-  }
+		setTimeout(() => {
+			const addresses = [...this.addressesSubject.value, trimmedAddress];
+			this.addressesSubject.next(addresses);
+			const customer = this.customerSubject.value;
+			if (customer && !customer.address) {
+				customer.address = trimmedAddress;
+				this.customerSubject.next(customer);
+			}
+			this.persistCustomer();
+			this.isSaving = false;
+			this.isAdding = false;
+			this.showMessage('success', 'Address added successfully!');
+		}, 1000);
+	}
 
-  goBack(): void {
-    this.router.navigate(['/']);
-  }
+	deleteAddress(index: number): void {
+		const currentAddresses = this.addressesSubject.value;
+		if (currentAddresses.length <= 1) {
+			this.showMessage('error', 'At least one address is required');
+			return;
+		}
+		const removedAddress = currentAddresses[index];
+		const updatedAddresses = [...currentAddresses];
+		updatedAddresses.splice(index, 1);
+		this.addressesSubject.next(updatedAddresses);
+		const customer = this.customerSubject.value;
+		if (customer?.address === removedAddress) {
+			customer.address = updatedAddresses[0] ?? '';
+			this.customerSubject.next(customer);
+		}
+		this.persistCustomer();
+		this.showMessage('success', 'Address deleted successfully!');
+	}
+
+	selectAddress(address: string): void {
+		const customer = this.customerSubject.value;
+		if (customer) {
+			customer.address = address;
+			this.customerSubject.next(customer);
+			this.persistCustomer();
+			this.showMessage('success', 'Address selected as default!', 2000);
+		}
+	}
+
+	logout(): void {
+		if (isPlatformBrowser(this.platformId)) {
+			localStorage.removeItem('customer');
+		}
+		this.router.navigate(['/login']);
+	}
+
+	goBack(): void {
+		this.router.navigate(['/']);
+	}
 }

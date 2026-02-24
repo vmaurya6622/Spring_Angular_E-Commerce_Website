@@ -6,7 +6,7 @@
   </header>
 
   <div class="content">
-    <!-- <div *ngIf="customer && orders.length > 0" class="orders-wrapper"> -->
+    <ng-container *ngIf="orders$ | async as orders">
     <div *ngIf="orders && orders.length > 0" class="orders-wrapper">
 
       <div class="order-stats">
@@ -15,12 +15,12 @@
           <div class="stat-label">Total Orders</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number">{{ getFirstOrderItemCount() }}</div>
+          <div class="stat-number">{{ recentItemsCount$ | async }}</div>
           <div class="stat-label">Recent Items</div>
         </div>
         <div class="stat-card">
           <div class="stat-number">
-            ₹{{ getTotalSpent() }}
+            ₹{{ totalSpent$ | async }}
           </div>
           <div class="stat-label">Total Spent</div>
         </div>
@@ -132,6 +132,7 @@
         Continue Shopping
       </button>
     </div>
+    </ng-container>
 
     <div *ngIf="!customer" class="no-data">
       <p>Please login to view your orders.</p>

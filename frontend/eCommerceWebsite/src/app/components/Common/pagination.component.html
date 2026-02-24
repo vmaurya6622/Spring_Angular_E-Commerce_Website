@@ -1,0 +1,11 @@
+<div class="pagination">
+	<button (click)="changePage(currentPage - 1)">Prev</button>
+	<button
+		*ngFor="let page of (pages$ | async) ?? []"
+		(click)="changePage(page)"
+		[class.active]="currentPage === page"
+	>
+		{{ page }}
+	</button>
+	<button (click)="changePage(currentPage + 1)">Next</button>
+</div>

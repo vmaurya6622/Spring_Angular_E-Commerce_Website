@@ -10,7 +10,9 @@
   </div>
 
   <div class="content">
-    <div *ngIf="customer" class="addresses-wrapper">
+    <div *ngIf="customer$ | async as customer" class="addresses-wrapper">
+
+      <ng-container *ngIf="addresses$ | async as addresses">
       <div class="section-header">
         <h2>📍 Saved Addresses</h2>
         <button class="add-btn" (click)="startAddAddress()" *ngIf="!isAdding">
@@ -59,7 +61,7 @@
             <button
               class="delete-btn"
               (click)="deleteAddress(i)"
-              [disabled]="addresses.length <= 1" 
+              [disabled]="addresses.length <= 1"
               title="At least one address is required"
             >
               🗑️ Delete
@@ -72,9 +74,10 @@
         <p>No addresses saved yet.</p>
         <p class="sub-text">Start by adding your first address</p>
       </div>
+      </ng-container>
     </div>
 
-    <div *ngIf="!customer" class="no-data">
+    <div *ngIf="!(customer$ | async)" class="no-data">
       <p>Please login to manage your addresses.</p>
       <button (click)="router.navigate(['/login'])" class="login-btn">Go to Login</button>
     </div>

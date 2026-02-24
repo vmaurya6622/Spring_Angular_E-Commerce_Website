@@ -1,206 +1,156 @@
-import { Component, OnInit, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
-import { Router, RouterModule, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { Router, RouterModule, } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { filter } from 'rxjs';
+import { BehaviorSubject, Observable, map, shareReplay, switchMap, tap, catchError, of } from 'rxjs';
 
 interface Customer {
-  id: number;
-  name: string;
-  email: string;
+	id: number;
+	name: string;
+	email: string;
 }
 
 interface OrderItem {
-  id: string;
-  productName: string;
-  quantity: number;
-  price: number;
-  subtotal: number;
+	id: string;
+	productName: string;
+	quantity: number;
+	price: number;
+	subtotal: number;
 }
 
 interface Order {
-  id: string;
-  orderDate: Date;
-  items: OrderItem[];
-  subtotal: number;
-  tax: number;
-  total: number;
-  status: 'pending' | 'shipped' | 'delivered' | 'cancelled';
+	id: string;
+	orderDate: Date;
+	items: OrderItem[];
+	subtotal: number;
+	tax: number;
+	total: number;
+	status: 'pending' | 'shipped' | 'delivered' | 'cancelled';
 }
 
 @Component({
-  selector: 'app-orders',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  templateUrl: './orders.component.html',
-  styleUrls: ['./orders.component.css']
+	selector: 'app-orders',
+	standalone: true,
+	imports: [CommonModule, RouterModule],
+	templateUrl: './orders.component.html',
+	styleUrls: ['./orders.component.css']
 })
 export class OrdersComponent implements OnInit {
-  customer: Customer | null = null;
-  orders: Order[] | null = null;
+	customer: Customer | null = null;
+	private ordersSubject = new BehaviorSubject<Order[] | null>(null);
+	orders$: Observable<Order[] | null> = this.ordersSubject.asObservable().pipe(shareReplay(1));
+	totalSpent$: Observable<number> = this.orders$.pipe(
+		map(orders => orders?.reduce((sum, order) => sum + order.total, 0) ?? 0),
+		shareReplay(1)
+	);
+	recentItemsCount$: Observable<number> = this.orders$.pipe(
+		map(orders => orders?.[0]?.items?.length ?? 0),
+		shareReplay(1)
+	);
 
-  expandedOrderId: string | null = null;
+	expandedOrderId: string | null = null;
+	
+	private loadOrdersTrigger = new BehaviorSubject<void>(undefined);
 
-  constructor(
-    public router: Router,
-    private route: ActivatedRoute,
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+	constructor(
+		public router: Router,
+		private http: HttpClient,
+		@Inject(PLATFORM_ID) private platformId: Object
+	) {
+		// Load orders trigger pipeline
+		this.loadOrdersTrigger.pipe(
+			switchMap(() => {
+				if (!this.customer) return of(null);
+				
+				const apiUrl = `http://localhost:8080/api/orders/customer/${this.customer.id}`;
+				return this.http.get<any[]>(apiUrl).pipe(
+					tap(rawOrders => {
+						this.ordersSubject.next((rawOrders ?? []).map(order => ({
+							id: order.id?.toString() ?? '',
+							orderDate: order.orderDate ? new Date(order.orderDate) : new Date(),
+							items: (order.items ?? []).map((item: any) => ({
+								id: item.id?.toString() ?? '',
+								productName: item.product?.name ?? item.productName ?? 'Unknown Product',
+								quantity: item.quantity ?? 0,
+								price: item.price ?? 0,
+								subtotal: item.subtotal ?? 0
+							})),
+							subtotal: order.subtotal ?? 0,
+							tax: order.tax ?? 0,
+							total: order.total ?? 0,
+							status: order.status ?? 'pending'
+						})));
+					}),
+					catchError(err => {
+						console.error('Error loading orders:', err);
+						this.ordersSubject.next([]);
+						alert('Failed to load orders. Please try again.');
+						return of(null);
+					})
+				);
+			})
+		).subscribe();
+	}
 
-  ngOnInit(): void {
-    console.log('=== ORDERS COMPONENT INIT ===');
-    if (isPlatformBrowser(this.platformId)) {
-      const customerData = localStorage.getItem('customer');
-      console.log('Customer data from localStorage:', customerData);
-      if (customerData) {
-        this.customer = JSON.parse(customerData);
-        console.log('Parsed customer:', this.customer);
-        console.log('Customer ID:', this.customer?.id);
-        this.loadOrders();
-      } else {
-        console.warn('No customer data found, redirecting to login');
-        this.router.navigate(['/login']);
-      }
-    } else {
-      console.log('Not in browser, skipping init');
-    }
-  }
+	ngOnInit(): void {
+		if (!isPlatformBrowser(this.platformId)) return;
 
-  loadOrders(): void {
-    this.orders=null;
-    console.log('=== LOAD ORDERS CALLED ===');
-    if (!isPlatformBrowser(this.platformId)) {
-      console.log('Not in browser, skipping loadOrders');
-      return;
-    }
+		const customerData = localStorage.getItem('customer');
 
-    const customerData = localStorage.getItem('customer');
-    if (!customerData) {
-      console.error('No customer data in localStorage');
-      return;
-    }
+		if (!customerData) {
+			this.router.navigate(['/login']);
+			return;
+		}
 
-    const customer = JSON.parse(customerData);
-    console.log('Loading orders for customer ID:', customer.id);
-    console.log('Customer name:', customer.name);
-    const apiUrl = `http://localhost:8080/api/orders/customer/${customer.id}`;
-    console.log('API URL:', apiUrl);
-    console.log('Making GET request...');
-    
-    this.http.get<any>(apiUrl)
-      .subscribe({
-        next: (orders) => {
-          console.log('=== API RESPONSE SUCCESS ===');
-          console.log('Raw response:', orders);
-          console.log('Response type:', typeof orders);
-          console.log('Is Array:', Array.isArray(orders));
-          const rawOrders = Array.isArray(orders) ? orders : [];
-          console.log('Number of orders:', rawOrders.length);
-          
-          if (rawOrders.length === 0) {
-            console.warn('!!! NO ORDERS FOUND FOR CUSTOMER !!!');
-            console.warn('This might mean:');
-            console.warn('1. No orders have been placed yet');
-            console.warn('2. Backend restarted and database was dropped (create-drop mode)');
-            console.warn('3. Customer ID mismatch');
-          } else {
-            console.log('Processing orders...');
-            rawOrders.forEach((order, index) => {
-              console.log(`Order ${index + 1}:`, order);
-            });
-          }
-          
-          this.orders = rawOrders.map(order => {
-            const rawItems = Array.isArray(order.items) ? order.items : [];
-            return {
-              id: order.id?.toString() ?? '',
-              orderDate: order.orderDate ? new Date(order.orderDate) : new Date(),
-              items: rawItems.map((item: any) => ({
-                id: item.id?.toString() ?? '',
-                productName: item.product?.name ?? item.productName ?? 'Unknown Product',
-                quantity: item.quantity ?? 0,
-                price: item.price ?? 0,
-                subtotal: item.subtotal ?? 0
-              })),
-              subtotal: order.subtotal ?? 0,
-              tax: order.tax ?? 0,
-              total: order.total ?? 0,
-              status: (order.status as 'pending' | 'shipped' | 'delivered' | 'cancelled') ?? 'pending'
-            };
-          });
-          this.cdr.detectChanges();
-          console.log('Processed orders:', this.orders);
-          console.log('=== LOAD ORDERS COMPLETE ===');
-        },
-        error: (err) => {
-          console.error('=== API ERROR ===');
-          console.error('Error loading orders:', err);
-          console.error('Error status:', err.status);
-          console.error('Error statusText:', err.statusText);
-          console.error('Error message:', err.message);
-          console.error('Error details:', err.error);
-          console.error('Full error object:', JSON.stringify(err, null, 2));
-          this.orders = [];
-          this.cdr.detectChanges();
-          alert('Failed to load orders. Check console for details.');
-        }
-      });
-  }
+		this.customer = JSON.parse(customerData);
+		this.loadOrdersTrigger.next();
+	}
 
-  toggleOrderDetails(orderId: string): void {
-    this.expandedOrderId = this.expandedOrderId === orderId ? null : orderId;
-  }
+	toggleOrderDetails(orderId: string): void {
+		this.expandedOrderId = this.expandedOrderId === orderId ? null : orderId;
+	}
 
-  getTotalSpent(): number {
-    return this.orders?.reduce((sum, order) => sum + order.total, 0) ?? 0;
-  }
+	getStatusColor(status: string): string {
+		switch (status) {
+			case 'delivered':
+				return 'green';
+			case 'shipped':
+				return 'blue';
+			case 'pending':
+				return 'orange';
+			case 'cancelled':
+				return 'red';
+			default:
+				return 'gray';
+		}
+	}
 
-  getFirstOrderItemCount(): number {
-    return this.orders?.[0]?.items?.length ?? 0;
-  }
+	getStatusIcon(status: string): string {
+		switch (status) {
+			case 'delivered':
+				return '✓';
+			case 'shipped':
+				return '📦';
+			case 'pending':
+				return '⏳';
+			case 'cancelled':
+				return '✗';
+			default:
+				return '?';
+		}
+	}
 
+	logout(): void {
+		if (isPlatformBrowser(this.platformId)) {
+			localStorage.removeItem('customer');
+		}
+		this.customer = null;
+		this.ordersSubject.next(null);
+		this.router.navigate(['/login']);
+	}
 
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'delivered':
-        return 'green';
-      case 'shipped':
-        return 'blue';
-      case 'pending':
-        return 'orange';
-      case 'cancelled':
-        return 'red';
-      default:
-        return 'gray';
-    }
-  }
-
-  getStatusIcon(status: string): string {
-    switch (status) {
-      case 'delivered':
-        return '✓';
-      case 'shipped':
-        return '📦';
-      case 'pending':
-        return '⏳';
-      case 'cancelled':
-        return '✗';
-      default:
-        return '?';
-    }
-  }
-
-  logout(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('customer');
-    }
-    this.router.navigate(['/login']);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/']);
-  }
+	goBack(): void {
+		this.router.navigate(['/']);
+	}
 }
