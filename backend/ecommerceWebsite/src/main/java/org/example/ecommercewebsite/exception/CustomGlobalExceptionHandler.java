@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.example.ecommercewebsite.dto.ErrorResponse;
-@ControllerAdvice
+@ControllerAdvice // this is one centralized place to handle exceptions across the whole application
 public class CustomGlobalExceptionHandler {
     @ExceptionHandler(CustomResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleCustomResourceNotFoundException(CustomResourceNotFoundException e, HttpServletRequest request) {
