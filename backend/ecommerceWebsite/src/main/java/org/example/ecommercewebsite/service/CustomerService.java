@@ -1,11 +1,11 @@
 package org.example.ecommercewebsite.service;
 
 import org.example.ecommercewebsite.entities.Customer;
+import org.example.ecommercewebsite.exception.CustomResourceNotFoundException;
+import org.example.ecommercewebsite.exception.InvalidRequestException;
 import org.example.ecommercewebsite.repositories.CustomerRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -44,15 +44,15 @@ public class CustomerService {
      * </p>
      * @param customer it is the entity which contains registration details
      * @return returns the saved entity.
-     * @throws RuntimeException if the username or email already exists.
+     * @throws InvalidRequestException if the username or email already exists.
      */
 
-    public Customer signup(Customer customer) { // try catch use here
+    public Customer signup(Customer customer) {
         if (customerRepo.existsByUsername(customer.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new InvalidRequestException("Username already exists");
         }
         if (customerRepo.existsByEmail(customer.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new InvalidRequestException("Email already exists");
         }
         return customerRepo.save(customer);
     }
@@ -99,12 +99,12 @@ public class CustomerService {
      * @param id  id of the customer to update.
      * @param customerDetails it contains the customer object which contains updated fields.
      * @return the updated customer entity.
-     * @throws ResponseStatusException if the customer is not found anywhere.
+     * @throws CustomResourceNotFoundException if the customer is not found anywhere.
      */
 
     public Customer updateCustomer(Long id, Customer customerDetails) {
         Customer customer = customerRepo.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
+            .orElseThrow(() -> new CustomResourceNotFoundException("Customer not found"));
 
         // Update fields if they are provided (not null)
         if (customerDetails.getName() != null) {

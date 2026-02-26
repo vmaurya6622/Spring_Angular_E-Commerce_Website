@@ -4,14 +4,14 @@ import org.example.ecommercewebsite.entities.CartItems;
 import org.example.ecommercewebsite.entities.CartManager;
 import org.example.ecommercewebsite.entities.Customer;
 import org.example.ecommercewebsite.entities.Product;
+import org.example.ecommercewebsite.exception.CustomResourceNotFoundException;
+import org.example.ecommercewebsite.exception.InvalidRequestException;
 import org.example.ecommercewebsite.repositories.CartItemRepo;
 import org.example.ecommercewebsite.repositories.CartRepo;
 import org.example.ecommercewebsite.repositories.CustomerRepo;
 import org.example.ecommercewebsite.repositories.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -46,12 +46,12 @@ public class CartService {
 	 * It retrieves existing cart for the customer or creates a new one if none exists.
 	 * @param customerId which is the ID of the customer.
 	 * @return existing or newly created CartManager instance.
-	 * @throws ResponseStatusException if the customer is not found.
+	 * @throws CustomResourceNotFoundException if the customer is not found.
 	 */
 
 	public CartManager getOrCreateCartForCustomer(Long customerId) {
 		Customer customer = customerRepo.findById(customerId)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
+			.orElseThrow(() -> new CustomResourceNotFoundException("Customer not found"));
 
 		List<CartManager> existingCarts = cartRepo.findAllByCustomerWithItems(customer);
 		if (!existingCarts.isEmpty()) {
@@ -73,18 +73,18 @@ public class CartService {
 	 * @param productId ID of product to be added to the cart.
 	 * @param quantity the quantity to be added to the cart.
 	 * @return updated CartManager
-	 * @throws ResponseStatusException if the quantity is invalid, product is not found or
-	 * 			insufficient stocks.
+	 * @throws InvalidRequestException if the quantity is invalid or insufficient stocks.
+	 * @throws CustomResourceNotFoundException if the product is not found.
 	 */
 
 	public CartManager addItem(Long customerId, Long productId, int quantity) {
 		if (quantity <= 0) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be at least 1");
+			throw new InvalidRequestException("Quantity must be at least 1");
 		}
 
 		CartManager cart = getOrCreateCartForCustomer(customerId);
 		Product product = productRepo.findById(productId)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+			.orElseThrow(() -> new CustomResourceNotFoundException("Product not found"));
 
 		CartItems existingItem = cart.getItems()
 			.stream()
@@ -95,7 +95,7 @@ public class CartService {
 		if (existingItem != null) {
 			int newQuantity = existingItem.getQuantity() + quantity;
 			if (newQuantity > product.getStock()) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+				throw new InvalidRequestException(
 					"Cannot add more items. Only " + product.getStock() + " available in stock. You already have " 
 					+ existingItem.getQuantity() + " in your cart.");
 			}
@@ -106,7 +106,7 @@ public class CartService {
 
 		// Check stock for new item
 		if (quantity > product.getStock()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+			throw new InvalidRequestException(
 				"Cannot add " + quantity + " items. Only " + product.getStock() + " available in stock.");
 		}
 
@@ -129,12 +129,13 @@ public class CartService {
 	 * @param itemId ID of the cart item.
 	 * @param quantity new quantity of the product requested.
 	 * @return updated CartManager.
-	 * @throws ResponseStatusException if the cart items are not found or stock is insufficient.
+	 * @throws CustomResourceNotFoundException if the cart item is not found.
+	 * @throws InvalidRequestException if the stock is insufficient.
 	 */
 
 	public CartManager updateQuantity(Long customerId, Long itemId, int quantity) {
 		CartItems item = cartItemRepo.findById(itemId)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart item not found"));
+			.orElseThrow(() -> new CustomResourceNotFoundException("Cart item not found"));
 
 		if (quantity <= 0) {
 			cartItemRepo.delete(item);
@@ -144,7 +145,7 @@ public class CartService {
 		// Validate stock before updating
 		Product product = item.getProduct();
 		if (quantity > product.getStock()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+			throw new InvalidRequestException(
 				"Cannot update quantity. Only " + product.getStock() + " available in stock.");
 		}
 
@@ -162,18 +163,16 @@ public class CartService {
 	 * @param customerId Unique ID of the customer.
 	 * @param itemId Id of the cart item to remove.
 	 * @return updated cartManager.
-	 * @throws ResponseStatusException if the cart item is not found or does not belong
-	 * 			to the customer's cart.
+	 * @throws CustomResourceNotFoundException if the cart item is not found.
+	 * @throws InvalidRequestException if the item does not belong to the customer's cart.
 	 */
 
 	public CartManager removeItem(Long customerId, Long itemId) {
 		CartManager cart = getOrCreateCartForCustomer(customerId);
 		CartItems item = cartItemRepo.findById(itemId)
-			.orElseThrow(() -> new ResponseStatusException(
-				HttpStatus.NOT_FOUND, "Cart item not found"));
+			.orElseThrow(() -> new CustomResourceNotFoundException("Cart item not found"));
 		if (!item.getCart().getId().equals(cart.getId())) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST, "Item does not belong to this cart");
+			throw new InvalidRequestException("Item does not belong to this cart");
 		}
 		cart.getItems().remove(item);
 		cartItemRepo.delete(item);

@@ -1,12 +1,12 @@
 package org.example.ecommercewebsite.service;
 
 import org.example.ecommercewebsite.entities.*;
+import org.example.ecommercewebsite.exception.CustomResourceNotFoundException;
+import org.example.ecommercewebsite.exception.InvalidRequestException;
 import org.example.ecommercewebsite.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -83,19 +83,19 @@ public class OrderService {
      * @param paymentMethod selected payment method by the user.
      * @param shippingCost which is 0 by default but can be changed.
      * @return the saved Order entity
-     * @throws ResponseStatusException if the customer/ cart is not found, cart is empty, or
-     *          insufficient stocks.
+     * @throws CustomResourceNotFoundException if the customer or cart is not found.
+     * @throws InvalidRequestException if cart is empty or insufficient stocks.
      */
 
     @Transactional
     public Order checkout(Long customerId, String paymentMethod, Double shippingCost) {
         System.out.println("Checkout started for customer ID: " + customerId);
         Customer customer = customerRepo.findById(customerId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
+            .orElseThrow(() -> new CustomResourceNotFoundException("Customer not found"));
         System.out.println("Customer found: " + customer.getName());
         List<CartManager> carts = cartRepo.findAllByCustomerWithItems(customer);
         if (carts.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found");
+            throw new CustomResourceNotFoundException("Cart not found");
         }
         CartManager cart = carts.stream()
             .filter(c -> c.getItems() != null && !c.getItems().isEmpty())
@@ -104,7 +104,7 @@ public class OrderService {
         System.out.println("Cart found with " + cart.getItems().size() + " items");
 
         if (cart.getItems().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
+            throw new InvalidRequestException("Cart is empty");
         }
 
         // Create order
@@ -122,7 +122,7 @@ public class OrderService {
             
             // Check stock availability
             if (product.getStock() < cartItem.getQuantity()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                throw new InvalidRequestException(
                     "Insufficient stock for product: " + product.getName());
             }
 
@@ -165,12 +165,12 @@ public class OrderService {
      * it Retrieves all the orders given by a customer
      * @param customerId customer id of the user.
      * @return list of Order Entities.
-     * @throws ResponseStatusException if the requested customer not found!
+     * @throws CustomResourceNotFoundException if the requested customer not found!
      */
     public List<Order> getCustomerOrders(Long customerId) {
         System.out.println("Fetching orders for customer ID: " + customerId);
         Customer customer = customerRepo.findById(customerId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
+            .orElseThrow(() -> new CustomResourceNotFoundException("Customer not found"));
         System.out.println("Customer found: " + customer.getName());
         List<Order> orders = orderRepo.findByCustomerWithItemsAndProducts(customer);
         System.out.println("Found " + orders.size() + " orders for customer " + customer.getName());
@@ -184,11 +184,11 @@ public class OrderService {
      * Retrieves a specific order of the customer by its ID.
       * @param orderId order id of the customer
      * @return the order entity
-     * @throws ResponseStatusException if the requested order is not found.
+     * @throws CustomResourceNotFoundException if the requested order is not found.
      */
 
     public Order getOrderById(Long orderId) {
         return orderRepo.findById(orderId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+            .orElseThrow(() -> new CustomResourceNotFoundException("Order not found"));
     }
 }

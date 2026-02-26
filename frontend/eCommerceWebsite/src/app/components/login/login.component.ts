@@ -58,7 +58,11 @@ export class LoginComponent {
           console.log('Login response:', response);
           // Store customer info in both localStorage and sessionStorage (only in browser)
           if (isPlatformBrowser(this.platformId)) {
-            const customerData = response.customer;
+            const customerData = response?.data ?? response?.customer ?? response;
+            if (!customerData?.id) {
+              this.errorMessage = 'Invalid login response from server.';
+              return;
+            }
             console.log('Storing customer:', customerData);
             const jsonData = JSON.stringify(customerData);
             localStorage.setItem('customer', jsonData);

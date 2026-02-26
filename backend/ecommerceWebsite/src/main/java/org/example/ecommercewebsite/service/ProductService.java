@@ -1,14 +1,13 @@
 package org.example.ecommercewebsite.service;
 
 import org.example.ecommercewebsite.entities.Product;
+import org.example.ecommercewebsite.exception.CustomResourceNotFoundException;
 import org.example.ecommercewebsite.repositories.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 /**
  * this Service mainly provides:
@@ -57,11 +56,11 @@ public class ProductService {
 	 *
 	 * @param id ID of the product.
 	 * @return product entity.
-	 * @throws ResponseStatusException if the product is not found.
+	 * @throws CustomResourceNotFoundException if the product is not found.
 	 */
 
 	public Product getProductById(Long id) {
 		return productRepo.findById(id)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+			.orElseThrow(() -> new CustomResourceNotFoundException("Product not found"));
 	}
 }

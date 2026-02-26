@@ -63,7 +63,7 @@ export class ProfileComponent implements OnInit {
 		this.messageBox$.next(null);
 		this.customerService.updateCustomer(customer.id, customer).pipe(
 			tap((response:any)=>{
-				const updatedCustomer = response.customer || response;
+				const updatedCustomer = response?.data ?? response?.customer ?? response;
 				if(isPlatformBrowser(this.platformId)) {
 					localStorage.setItem('customer',JSON.stringify(updatedCustomer));
 				}
