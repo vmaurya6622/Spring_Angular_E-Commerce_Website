@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@RestController // iski wjah se har method ka response JSON me convert hojata hai automatically.
 @RequestMapping("/api/cart")
 public class CartController {
 	@Autowired
@@ -26,8 +26,8 @@ public class CartController {
 
 	@PostMapping("/{customerId}/items")
 	public CartManager addItem(
-		@PathVariable Long customerId,
-		@RequestBody AddCartItemRequest request
+		@PathVariable Long customerId, // it is used to read the customer ID from the URL path and pass it to the service layer for cart operations.
+		@RequestBody AddCartItemRequest request // it converts the JSON request body into a Java object. 
 	) {
 		int quantity = request.quantity() == null ? 1 : request.quantity();
 		return cartService.addItem(customerId, request.productId(), quantity);
