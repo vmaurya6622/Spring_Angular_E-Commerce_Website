@@ -6,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { CartItem } from '../../models/cart-item.model';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subject, catchError, map, of, shareReplay, startWith, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, ReplaySubject, catchError, map, of, shareReplay, startWith, switchMap, tap } from 'rxjs';
 import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 
 interface CartItemView {
@@ -37,7 +37,7 @@ export class CartComponent implements OnInit {
 	private cartItemsSubject = new BehaviorSubject<CartItemView[]>([]);
 	private loadingSubject = new BehaviorSubject<boolean>(true);
 	private errorMessageSubject = new BehaviorSubject<string>('');
-	private readonly loadCartTrigger = new Subject<void>();
+	private readonly loadCartTrigger = new ReplaySubject<void>(1);
 	private readonly updateQuantityTrigger = new Subject<{ id: number; qty: number }>();
 	private readonly removeItemTrigger = new Subject<number>();
 	private readonly checkoutTrigger = new Subject<void>();

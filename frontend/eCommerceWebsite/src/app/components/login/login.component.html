@@ -1,5 +1,5 @@
 <div class="background">
-  <ng-container *ngIf="(loginEffect$ | async) === null"></ng-container>
+  <div style="display:none" [attr.data-login-effect]="(loginEffect$ | async) ? '' : ''"></div>
   <div class="login-card">
     <div class="login-logo" (click)="goToHome()" style="cursor: pointer;">
       <img src="/assets/logo.png" alt="InstaKart Logo">

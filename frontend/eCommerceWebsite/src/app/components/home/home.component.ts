@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { Product } from '../../models/product.model';
-import { Observable, BehaviorSubject, Subject, combineLatest, map, shareReplay, switchMap, tap, catchError, of, startWith } from 'rxjs';
+import { Observable, BehaviorSubject, Subject, ReplaySubject, combineLatest, map, shareReplay, switchMap, tap, catchError, of, startWith } from 'rxjs';
 import { PaginationComponent } from '../Common/pagination/pagination.component';
 import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 import { NavbarComponent } from '../Common/navbar/navbar.component';
@@ -69,7 +69,7 @@ export class HomeComponent {
 		}),
 		shareReplay(1)
 	);
-	private readonly loadProductsTrigger = new Subject<void>();
+	private readonly loadProductsTrigger = new ReplaySubject<void>(1);
 	readonly loadProductsEffect$ = this.loadProductsTrigger.pipe(
 		switchMap(() => this.productService.getProducts(0, 100).pipe(
 			tap(response => {
@@ -87,7 +87,7 @@ export class HomeComponent {
 		shareReplay(1)
 	);
 
-	private readonly loadCartItemsTrigger = new Subject<void>();
+	private readonly loadCartItemsTrigger = new ReplaySubject<void>(1);
 	readonly loadCartItemsEffect$ = this.loadCartItemsTrigger.pipe(
 		switchMap(() => this.cartService.loadCart().pipe(
 			tap(items => {

@@ -1,5 +1,5 @@
 <div class="page">
-<ng-container *ngIf="(saveProfileEffect$ | async) === null"></ng-container>
+<div style="display:none" [attr.data-save-profile]="(saveProfileEffect$ | async) ? '' : ''"></div>
 <div class="profile-container" style="font-family: 'Segoe UI', sans-serif">
   <header class="header">
     <button class="back-btn" (click)="goBack()">← Back</button>

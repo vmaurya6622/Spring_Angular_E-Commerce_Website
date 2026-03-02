@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { BehaviorSubject, Observable, Subject, catchError, map, of, shareReplay, startWith, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, ReplaySubject, catchError, map, of, shareReplay, startWith, switchMap, tap } from 'rxjs';
 
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
@@ -31,7 +31,7 @@ export class ProductListComponent implements OnInit {
   isLoading$: Observable<boolean> = this.loadingSubject.asObservable().pipe(shareReplay(1));
   private errorMessageSubject = new BehaviorSubject<string>('');
   errorMessage$: Observable<string> = this.errorMessageSubject.asObservable().pipe(shareReplay(1));
-  private readonly loadProductsTrigger = new Subject<void>();
+  private readonly loadProductsTrigger = new ReplaySubject<void>(1);
   readonly loadProductsEffect$ = this.loadProductsTrigger.pipe(
     switchMap(() => {
       this.loadingSubject.next(true);

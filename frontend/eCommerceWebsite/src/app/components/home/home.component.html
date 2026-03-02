@@ -1,7 +1,7 @@
 <div [class.dark]="darkMode" class="page">
-  <ng-container *ngIf="(loadProductsEffect$ | async) === null"></ng-container>
-  <ng-container *ngIf="(loadCartItemsEffect$ | async) === null"></ng-container>
-  <ng-container *ngIf="(addToCartEffect$ | async) === null"></ng-container>
+  <div style="display:none" [attr.data-load-products]="(loadProductsEffect$ | async) ? '' : ''"></div>
+  <div style="display:none" [attr.data-load-cart]="(loadCartItemsEffect$ | async) ? '' : ''"></div>
+  <div style="display:none" [attr.data-add-cart]="(addToCartEffect$ | async) ? '' : ''"></div>
   <app-navbar
     [darkMode]="darkMode"
     [searchText]="searchText"

@@ -1,6 +1,6 @@
 <div class="page">
-	<ng-container *ngIf="(loadProductsEffect$ | async) === null"></ng-container>
-	<ng-container *ngIf="(addToCartEffect$ | async) === null"></ng-container>
+	<div style="display:none" [attr.data-load-products]="(loadProductsEffect$ | async) ? '' : ''"></div>
+	<div style="display:none" [attr.data-add-cart]="(addToCartEffect$ | async) ? '' : ''"></div>
 	<nav class="navbar">
 		<div class="logo" (click)="goToHome()" style="cursor: pointer;">
 			<img src="/assets/logo.png" alt="InstaKart Logo">

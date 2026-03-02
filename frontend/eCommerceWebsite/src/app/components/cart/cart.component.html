@@ -1,8 +1,8 @@
 <div [class.dark]="darkMode">
-  <ng-container *ngIf="(loadCartEffect$ | async) === null"></ng-container>
-  <ng-container *ngIf="(updateQuantityEffect$ | async) === null"></ng-container>
-  <ng-container *ngIf="(removeItemEffect$ | async) === null"></ng-container>
-  <ng-container *ngIf="(checkoutEffect$ | async) === null"></ng-container>
+  <div style="display:none" [attr.data-load-cart]="(loadCartEffect$ | async) ? '' : ''"></div>
+  <div style="display:none" [attr.data-update-qty]="(updateQuantityEffect$ | async) ? '' : ''"></div>
+  <div style="display:none" [attr.data-remove-item]="(removeItemEffect$ | async) ? '' : ''"></div>
+  <div style="display:none" [attr.data-checkout]="(checkoutEffect$ | async) ? '' : ''"></div>
 
   <!-- NAVBAR -->
   <nav class="navbar">
