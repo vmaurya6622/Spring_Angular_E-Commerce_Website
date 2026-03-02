@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, shareReplay, switchMap, tap, catchError, of, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, shareReplay, switchMap, tap, catchError, of, startWith } from 'rxjs';
 import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
@@ -31,6 +31,63 @@ export class ProductDetailComponent implements OnInit {
 	customerName = '';
 	private isInCartSubject = new BehaviorSubject<boolean>(false);
 	isInCart$: Observable<boolean> = this.isInCartSubject.asObservable().pipe(shareReplay(1));
+	private readonly addToCartTrigger = new Subject<void>();
+	readonly addToCartEffect$ = this.addToCartTrigger.pipe(
+		switchMap(() => {
+			const product = this.productSubject.value;
+			if (!product || product.stock === 0) return of(null);
+
+			if (!this.isLoggedIn) {
+				alert('Please login to add items to cart');
+				this.router.navigate(['/login']);
+				return of(null);
+			}
+
+			return this.cartService.loadCart().pipe(
+				switchMap(cartItems => {
+					const existingItem = cartItems.find(item => item.product.id === product.id);
+					const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
+
+					if (currentQuantityInCart >= product.stock) {
+						alert(
+							`Cannot add more! Only ${product.stock} items available in stock. ` +
+							`You already have ${currentQuantityInCart} in your cart.`
+						);
+						return of(null);
+					}
+
+					return this.cartService.addItem(product.id, 1).pipe(
+						tap(() => {
+							this.isInCartSubject.next(true);
+							alert(`${product.name} added to cart successfully!`);
+						}),
+						catchError((err: any) => {
+							console.error('Error adding to cart:', err);
+							if (err.status === 401 || err.status === 403) {
+								alert('Please login to add items to cart');
+								this.router.navigate(['/login']);
+								return of(null);
+							}
+							alert(err.error?.message || 'Failed to add item to cart.');
+							return of(null);
+						})
+					);
+				}),
+				catchError((err: any) => {
+					console.error('Error adding to cart:', err);
+					if (err.status === 401 || err.status === 403) {
+						alert('Please login to add items to cart');
+						this.router.navigate(['/login']);
+						return of(null);
+					}
+					alert(err.error?.message || 'Failed to add item to cart.');
+					return of(null);
+				})
+			);
+		}),
+		startWith(null),
+		shareReplay(1)
+	);
 
 	constructor(
 		private route: ActivatedRoute,
@@ -103,41 +160,10 @@ export class ProductDetailComponent implements OnInit {
 		}
 	}
 
-	async addToCart(): Promise<void> {
+	addToCart(): void {
 		const product = this.productSubject.value;
 		if (!product || product.stock === 0) return;
-		
-		if (!this.isLoggedIn) {
-			alert('Please login to add items to cart');
-			this.router.navigate(['/login']);
-			return;
-		}
-
-		try {
-			const cartItems = await firstValueFrom(this.cartService.loadCart());
-			const existingItem = cartItems.find(item => item.product.id === product.id);
-			const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
-
-			if (currentQuantityInCart >= product.stock) {
-				alert(
-					`Cannot add more! Only ${product.stock} items available in stock. ` +
-					`You already have ${currentQuantityInCart} in your cart.`
-				);
-				return;
-			}
-
-			await firstValueFrom(this.cartService.addItem(product.id, 1));
-			this.isInCartSubject.next(true);
-			alert(`${product.name} added to cart successfully!`);
-		} catch (err: any) {
-			console.error('Error adding to cart:', err);
-			if (err.status === 401 || err.status === 403) {
-				alert('Please login to add items to cart');
-				this.router.navigate(['/login']);
-				return;
-			}
-			alert(err.error?.message || 'Failed to add item to cart.');
-		}
+		this.addToCartTrigger.next();
 	}
 
 	goToHome(): void {

@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { Product } from '../../models/product.model';
-import { Observable, BehaviorSubject, combineLatest, map, shareReplay, firstValueFrom } from 'rxjs';
+import { Observable, BehaviorSubject, Subject, combineLatest, map, shareReplay, switchMap, tap, catchError, of, startWith } from 'rxjs';
 import { PaginationComponent } from '../Common/pagination/pagination.component';
 import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 import { NavbarComponent } from '../Common/navbar/navbar.component';
@@ -69,6 +69,79 @@ export class HomeComponent {
 		}),
 		shareReplay(1)
 	);
+	private readonly loadProductsTrigger = new Subject<void>();
+	readonly loadProductsEffect$ = this.loadProductsTrigger.pipe(
+		switchMap(() => this.productService.getProducts(0, 100).pipe(
+			tap(response => {
+				this.booksSubject.next((response.content ?? []).map((product: Product) =>
+					this.mapProduct(product)
+				));
+			}),
+			catchError(error => {
+				console.error('Error loading products:', error);
+				this.booksSubject.next([]);
+				return of(null);
+			})
+		)),
+		startWith(null),
+		shareReplay(1)
+	);
+
+	private readonly loadCartItemsTrigger = new Subject<void>();
+	readonly loadCartItemsEffect$ = this.loadCartItemsTrigger.pipe(
+		switchMap(() => this.cartService.loadCart().pipe(
+			tap(items => {
+				this.productsInCart = new Set(items.map(item => item.product.id));
+			}),
+			catchError(err => {
+				console.error('Error loading cart items:', err);
+				return of([]);
+			})
+		)),
+		startWith(null),
+		shareReplay(1)
+	);
+
+	private readonly addToCartTrigger = new Subject<Book>();
+	readonly addToCartEffect$ = this.addToCartTrigger.pipe(
+		switchMap(book => this.cartService.loadCart().pipe(
+			switchMap(cartItems => {
+				const existingItem = cartItems.find(item => item.product.id === book.id);
+				const currentQuantity = existingItem ? existingItem.quantity : 0;
+
+				if (currentQuantity >= book.stock) {
+					alert(`Only ${book.stock} items available. You already have ${currentQuantity} in cart.`);
+					return of(null);
+				}
+
+				return this.cartService.addItem(book.id, 1).pipe(
+					tap(() => {
+						this.productsInCart.add(book.id);
+						this.productsInCart = new Set(this.productsInCart);
+						alert(`${book.title} added to cart!`);
+					}),
+					catchError((err: any) => {
+						console.error('Error adding to cart:', err);
+						if (err.status === 401 || err.status === 403) {
+							alert('Please login first');
+							this.router.navigate(['/login']);
+							return of(null);
+						}
+						alert(err.error?.message || 'Failed to add item');
+						return of(null);
+					})
+				);
+			}),
+			catchError(err => {
+				console.error('Error checking cart:', err);
+				alert('Please login first');
+				this.router.navigate(['/login']);
+				return of(null);
+			})
+		)),
+		startWith(null),
+		shareReplay(1)
+	);
 
 	productsInCart: Set<number> = new Set();
 
@@ -89,31 +162,10 @@ export class HomeComponent {
 			}
 		}
 
-		void this.loadProducts();
+		this.loadProductsTrigger.next();
 
 		if (this.isLoggedIn) {
-			void this.loadCartItems();
-		}
-	}
-
-	private async loadProducts(): Promise<void> {
-		try {
-			const response = await firstValueFrom(this.productService.getProducts(0, 100));
-			this.booksSubject.next((response.content ?? []).map((product: Product) =>
-				this.mapProduct(product)
-			));
-		} catch (error) {
-			console.error('Error loading products:', error);
-			this.booksSubject.next([]);
-		}
-	}
-
-	private async loadCartItems(): Promise<void> {
-		try {
-			const items = await firstValueFrom(this.cartService.loadCart());
-			this.productsInCart = new Set(items.map(item => item.product.id));
-		} catch (err) {
-			console.error('Error loading cart items:', err);
+			this.loadCartItemsTrigger.next();
 		}
 	}
 
@@ -171,7 +223,7 @@ export class HomeComponent {
 		this.router.navigate(['/login']);
 	}
 
-	async addToCart(book: Book): Promise<void> {
+	addToCart(book: Book): void {
 		if (book.stock <= 0) return;
 
 		if (!this.isLoggedIn) {
@@ -180,29 +232,7 @@ export class HomeComponent {
 			return;
 		}
 
-		try {
-			const cartItems = await firstValueFrom(this.cartService.loadCart());
-			const existingItem = cartItems.find(item => item.product.id === book.id);
-			const currentQuantity = existingItem ? existingItem.quantity : 0;
-
-			if (currentQuantity >= book.stock) {
-				alert(`Only ${book.stock} items available. You already have ${currentQuantity} in cart.`);
-				return;
-			}
-
-			await firstValueFrom(this.cartService.addItem(book.id, 1));
-			this.productsInCart.add(book.id);
-			this.productsInCart = new Set(this.productsInCart);
-			alert(`${book.title} added to cart!`);
-		} catch (err: any) {
-			console.error('Error adding to cart:', err);
-			if (err.status === 401 || err.status === 403) {
-				alert('Please login first');
-				this.router.navigate(['/login']);
-				return;
-			}
-			alert(err.error?.message || 'Failed to add item');
-		}
+		this.addToCartTrigger.next(book);
 	}
 
 	isInCart(bookId: number): boolean {

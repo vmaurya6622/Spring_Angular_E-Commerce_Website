@@ -6,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { CartItem } from '../../models/cart-item.model';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, map, shareReplay, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, catchError, map, of, shareReplay, startWith, switchMap, tap } from 'rxjs';
 import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 
 interface CartItemView {
@@ -37,6 +37,10 @@ export class CartComponent implements OnInit {
 	private cartItemsSubject = new BehaviorSubject<CartItemView[]>([]);
 	private loadingSubject = new BehaviorSubject<boolean>(true);
 	private errorMessageSubject = new BehaviorSubject<string>('');
+	private readonly loadCartTrigger = new Subject<void>();
+	private readonly updateQuantityTrigger = new Subject<{ id: number; qty: number }>();
+	private readonly removeItemTrigger = new Subject<number>();
+	private readonly checkoutTrigger = new Subject<void>();
 	
 	cartItems$: Observable<CartItemView[]>;
 	isLoading$: Observable<boolean>;
@@ -44,6 +48,113 @@ export class CartComponent implements OnInit {
 	subtotal$: Observable<number>;
 	tax$: Observable<number>;
 	total$: Observable<number>;
+	readonly loadCartEffect$ = this.loadCartTrigger.pipe(
+		tap(() => this.loadingSubject.next(true)),
+		switchMap(() => this.cartService.loadCart().pipe(
+			tap(items => {
+				this.cartItemsSubject.next(items.map(item => this.mapItem(item)));
+				this.errorMessageSubject.next('');
+			}),
+			catchError(err => {
+				console.error('Error loading cart:', err);
+				this.cartItemsSubject.next([]);
+				this.errorMessageSubject.next('Failed to load cart');
+				return of([]);
+			}),
+			tap(() => this.loadingSubject.next(false))
+		)),
+		startWith(null),
+		shareReplay(1)
+	);
+
+	readonly updateQuantityEffect$ = this.updateQuantityTrigger.pipe(
+		switchMap(({ id, qty }) => this.cartService.updateQuantity(id, qty).pipe(
+			tap(items => {
+				this.cartItemsSubject.next(items.map(item => this.mapItem(item)));
+				this.errorMessageSubject.next('');
+			}),
+			catchError((err: any) => {
+				console.error('Error updating quantity:', err);
+				this.errorMessageSubject.next(err.error?.message || 'Failed to update quantity');
+				this.loadCartTrigger.next();
+				return of(null);
+			})
+		)),
+		startWith(null),
+		shareReplay(1)
+	);
+
+	readonly removeItemEffect$ = this.removeItemTrigger.pipe(
+		switchMap(id => this.cartService.removeItem(id).pipe(
+			tap(items => {
+				this.cartItemsSubject.next(items.map(item => this.mapItem(item)));
+				this.errorMessageSubject.next('');
+			}),
+			catchError((err: any) => {
+				console.error('Error removing item:', err);
+				this.errorMessageSubject.next(err.error?.message || 'Failed to remove item');
+				this.loadCartTrigger.next();
+				return of(null);
+			})
+		)),
+		startWith(null),
+		shareReplay(1)
+	);
+
+	readonly checkoutEffect$ = this.checkoutTrigger.pipe(
+		switchMap(() => {
+			if (this.cartItemsSubject.value.length === 0) {
+				alert('Your cart is empty!');
+				return of(null);
+			}
+
+			if (!isPlatformBrowser(this.platformId)) return of(null);
+
+			const customerData = localStorage.getItem('customer');
+			if (!customerData) {
+				alert('Please login to checkout');
+				this.router.navigate(['/login']);
+				return of(null);
+			}
+
+			const customer = JSON.parse(customerData);
+			const checkoutRequest = {
+				customerId: customer.id,
+				paymentMethod: this.selectedCheckout,
+				shippingCost: this.shippingCost
+			};
+
+			return this.http.post('http://localhost:8080/api/orders/checkout', checkoutRequest).pipe(
+				tap((order: any) => {
+					const checkoutInfo = `
+						Checkout Successful!
+						==================
+						Order ID: ${order.id}
+						Payment Method: ${this.getCheckoutMethodName(this.selectedCheckout)}
+
+						Subtotal: ₹${order.subtotal.toFixed(2)}
+						Tax (10%): ₹${order.tax.toFixed(2)}
+						Shipping: ${order.shippingCost === 0 ? 'FREE' : '₹' + order.shippingCost.toFixed(2)}
+						Total: ₹${order.total.toFixed(2)}
+
+						Items: ${order.items.length} item(s)
+						Thank you for your purchase!
+							`;
+					alert(checkoutInfo);
+					this.cartItemsSubject.next([]);
+					this.router.navigate(['/orders']);
+					window.location.href = '/orders';
+				}),
+				catchError((err: any) => {
+					console.error('Checkout error:', err);
+					alert(err.error?.message || 'Checkout failed maybe the product is now out of stock. Please try again...');
+					return of(null);
+				})
+			);
+		}),
+		startWith(null),
+		shareReplay(1)
+	);
 
 	constructor(
 		private cartService: CartService,
@@ -82,59 +193,21 @@ export class CartComponent implements OnInit {
 			const customer = JSON.parse(customerData);
 			this.isLoggedIn = true;
 			this.customerName = customer.name || 'User';
-			void this.loadCart();
+			this.loadCartTrigger.next();
 		}
 	}
 
-    private async loadCart(): Promise<void> {
-		this.loadingSubject.next(true);
-		try {
-			const items = await firstValueFrom(this.cartService.loadCart());
-			this.cartItemsSubject.next(items.map(item => this.mapItem(item)));
-			this.errorMessageSubject.next('');
-		} catch (err) {
-			console.error('Error loading cart:', err);
-			this.cartItemsSubject.next([]);
-			this.errorMessageSubject.next('Failed to load cart');
-		} finally {
-			this.loadingSubject.next(false);
-		}
-	}
-
-	private async updateQuantity(id: number, qty: number): Promise<void> {
-		try {
-			const items = await firstValueFrom(this.cartService.updateQuantity(id, qty));
-			this.cartItemsSubject.next(items.map(item => this.mapItem(item)));
-			this.errorMessageSubject.next('');
-		} catch (err: any) {
-			console.error('Error updating quantity:', err);
-			this.errorMessageSubject.next(err.error?.message || 'Failed to update quantity');
-			await this.loadCart();
-		}
-	}
-
-	private async removeCartItem(id: number): Promise<void> {
-		try {
-			const items = await firstValueFrom(this.cartService.removeItem(id));
-			this.cartItemsSubject.next(items.map(item => this.mapItem(item)));
-			this.errorMessageSubject.next('');
-		} catch (err: any) {
-			console.error('Error removing item:', err);
-			this.errorMessageSubject.next(err.error?.message || 'Failed to remove item');
-			await this.loadCart();
-		}
-	}
 	increaseQuantity(id: number, currentQuantity: number): void {
 		const item = this.cartItemsSubject.value.find(i => i.id === id);
 		if (item && currentQuantity >= item.stock) {
 			alert(`Cannot add more! Only ${item.stock} items available in stock.`);
 			return;
 		}
-		void this.updateQuantity(id, currentQuantity + 1);
+		this.updateQuantityTrigger.next({ id, qty: currentQuantity + 1 });
 	}
 
 	decreaseQuantity(id: number, currentQuantity: number): void {
-		void this.updateQuantity(id, currentQuantity - 1);
+		this.updateQuantityTrigger.next({ id, qty: currentQuantity - 1 });
 	}
 
 	removeItem(id: number): void {
@@ -146,58 +219,12 @@ export class CartComponent implements OnInit {
 			updatedItems.splice(itemIndex, 1);
 			this.cartItemsSubject.next(updatedItems);
 		}
-		void this.removeCartItem(id);
+		this.removeItemTrigger.next(id);
 	}
 
 
-	async checkout(): Promise<void> {
-		if (this.cartItemsSubject.value.length === 0) {
-			alert('Your cart is empty!');
-			return;
-		}
-
-		if (!isPlatformBrowser(this.platformId)) return;
-
-		const customerData = localStorage.getItem('customer');
-		if (!customerData) {
-			alert('Please login to checkout');
-			this.router.navigate(['/login']);
-			return;
-		}
-
-		const customer = JSON.parse(customerData);
-		const checkoutRequest = {
-			customerId: customer.id,
-			paymentMethod: this.selectedCheckout,
-			shippingCost: this.shippingCost
-		};
-
-		try {
-			const order: any = await firstValueFrom(
-				this.http.post('http://localhost:8080/api/orders/checkout', checkoutRequest)
-			);
-			const checkoutInfo = `
-					Checkout Successful!
-					==================
-					Order ID: ${order.id}
-					Payment Method: ${this.getCheckoutMethodName(this.selectedCheckout)}
-
-					Subtotal: ₹${order.subtotal.toFixed(2)}
-					Tax (10%): ₹${order.tax.toFixed(2)}
-					Shipping: ${order.shippingCost === 0 ? 'FREE' : '₹' + order.shippingCost.toFixed(2)}
-					Total: ₹${order.total.toFixed(2)}
-
-					Items: ${order.items.length} item(s)
-					Thank you for your purchase!
-						`;
-			alert(checkoutInfo);
-			this.cartItemsSubject.next([]);
-			this.router.navigate(['/orders']);
-			window.location.href = '/orders';
-		} catch (err: any) {
-			console.error('Checkout error:', err);
-			alert(err.error?.message || 'Checkout failed maybe the product is now out of stock. Please try again...');
-		}
+	checkout(): void {
+		this.checkoutTrigger.next();
 	}
 	private getCheckoutMethodName(method: string): string {
 		const methods: { [key: string]: string } = {

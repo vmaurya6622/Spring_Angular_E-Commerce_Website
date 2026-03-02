@@ -1,4 +1,5 @@
 <div class="signup-container">
+  <ng-container *ngIf="(submitEffect$ | async) === null"></ng-container>
   <div class="signup-card">
     <div class="signup-logo" (click)="goToHome()" style="cursor: pointer">
       <img src="/assets/logo.png" alt="InstaKart Logo" />

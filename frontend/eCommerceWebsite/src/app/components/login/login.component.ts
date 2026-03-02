@@ -4,7 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { Subject, of, switchMap, tap, catchError, shareReplay, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +18,34 @@ export class LoginComponent {
   username: string = '';
   password: string = '';
   errorMessage: string = '';
+  private readonly loginTrigger = new Subject<{ usernameOrEmail: string; password: string }>();
+  readonly loginEffect$ = this.loginTrigger.pipe(
+    switchMap(credentials =>
+      this.http.post('http://localhost:8080/api/customers/login', credentials).pipe(
+        tap((response: any) => {
+          console.log('Login response:', response);
+          if (isPlatformBrowser(this.platformId)) {
+            const customerData = response?.data ?? response?.customer ?? response;
+            if (!customerData?.id) {
+              this.errorMessage = 'Invalid login response from server.';
+              return;
+            }
+            const jsonData = JSON.stringify(customerData);
+            localStorage.setItem('customer', jsonData);
+            sessionStorage.setItem('customer', jsonData);
+          }
+          this.router.navigate(['/']);
+        }),
+        catchError((error) => {
+          console.error('Login error:', error);
+          this.errorMessage = error.error?.message || 'Invalid username/email or password.';
+          return of(null);
+        })
+      )
+    ),
+    startWith(null),
+    shareReplay(1)
+  );
 
   constructor(
     private router: Router,
@@ -30,7 +58,7 @@ export class LoginComponent {
     this.errorMessage = '';
   }
 
-  async login(): Promise<void> {
+  login(): void {
     if (!this.username || !this.password) {
       this.errorMessage = 'Please enter username/email and password.';
       return;
@@ -53,30 +81,7 @@ export class LoginComponent {
       password: this.password
     };
 
-    try {
-      const response: any = await firstValueFrom(
-        this.http.post('http://localhost:8080/api/customers/login', credentials)
-      );
-
-      console.log('Login response:', response);
-      if (isPlatformBrowser(this.platformId)) {
-        const customerData = response?.data ?? response?.customer ?? response;
-        if (!customerData?.id) {
-          this.errorMessage = 'Invalid login response from server.';
-          return;
-        }
-        console.log('Storing customer:', customerData);
-        const jsonData = JSON.stringify(customerData);
-        localStorage.setItem('customer', jsonData);
-        sessionStorage.setItem('customer', jsonData);
-        console.log('Stored in localStorage:', localStorage.getItem('customer'));
-        console.log('Stored in sessionStorage:', sessionStorage.getItem('customer'));
-      }
-      this.router.navigate(['/']);
-    } catch (error: any) {
-      console.error('Login error:', error);
-      this.errorMessage = error.error?.message || 'Invalid username/email or password.';
-    }
+    this.loginTrigger.next(credentials);
   }
 
   goToSignup(): void {

@@ -1,4 +1,8 @@
 <div [class.dark]="darkMode">
+  <ng-container *ngIf="(loadCartEffect$ | async) === null"></ng-container>
+  <ng-container *ngIf="(updateQuantityEffect$ | async) === null"></ng-container>
+  <ng-container *ngIf="(removeItemEffect$ | async) === null"></ng-container>
+  <ng-container *ngIf="(checkoutEffect$ | async) === null"></ng-container>
 
   <!-- NAVBAR -->
   <nav class="navbar">

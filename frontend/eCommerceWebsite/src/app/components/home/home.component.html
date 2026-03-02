@@ -1,4 +1,7 @@
 <div [class.dark]="darkMode" class="page">
+  <ng-container *ngIf="(loadProductsEffect$ | async) === null"></ng-container>
+  <ng-container *ngIf="(loadCartItemsEffect$ | async) === null"></ng-container>
+  <ng-container *ngIf="(addToCartEffect$ | async) === null"></ng-container>
   <app-navbar
     [darkMode]="darkMode"
     [searchText]="searchText"

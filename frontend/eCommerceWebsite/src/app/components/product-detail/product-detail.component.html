@@ -1,4 +1,5 @@
 <div class="detail-page" [class.dark]="darkMode">
+	<ng-container *ngIf="(addToCartEffect$ | async) === null"></ng-container>
 	<nav class="navbar">
 		<div class="logo" (click)="goToHome()" style="cursor: pointer;">
 			<img src="/assets/logo.png" alt="InstaKart Logo">

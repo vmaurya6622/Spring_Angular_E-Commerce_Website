@@ -4,7 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CustomerService, Customer } from '../../services/customer.service';
-import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, catchError, of, shareReplay, startWith, switchMap, tap } from 'rxjs';
 import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 
 @Component({
@@ -23,6 +23,39 @@ export class ProfileComponent implements OnInit {
 	readonly isSaving$: Observable<boolean> = this.isSavingSubject.asObservable();
 	private readonly messageBoxSubject = new BehaviorSubject<{ type: 'success' | 'error', message: string } | null>(null);
 	readonly messageBox$: Observable<{ type: 'success' | 'error', message: string } | null> = this.messageBoxSubject.asObservable();
+	private readonly saveProfileTrigger = new Subject<void>();
+	readonly saveProfileEffect$ = this.saveProfileTrigger.pipe(
+		switchMap(() => {
+			const customer = this.customerSubject.value;
+			if (!customer) {
+				return of(null);
+			}
+
+			this.isSavingSubject.next(true);
+			this.messageBoxSubject.next(null);
+
+			return this.customerService.updateCustomer(customer.id, customer).pipe(
+				tap((response: any) => {
+					const updatedCustomer = response?.data ?? response?.customer ?? response;
+					if (isPlatformBrowser(this.platformId)) {
+						localStorage.setItem('customer', JSON.stringify(updatedCustomer));
+					}
+					this.customerSubject.next(updatedCustomer);
+					this.isEditingSubject.next(false);
+					this.showMessage('success', 'Profile updated successfully!');
+				}),
+				catchError((err: any) => {
+					this.showMessage(
+						'error', err.error?.message || 'Failed to update the profile. Please try again.'
+					);
+					return of(null);
+				}),
+				tap(() => this.isSavingSubject.next(false))
+			);
+		}),
+		startWith(null),
+		shareReplay(1)
+	);
 
 	constructor(
 		public router: Router,
@@ -59,29 +92,8 @@ export class ProfileComponent implements OnInit {
 		this.loadCustomerProfile();
 	}
 
-	async saveProfile(): Promise<void> {
-		const customer = this.customerSubject.value;
-		if(!customer)return;
-		this.isSavingSubject.next(true);
-		this.messageBoxSubject.next(null);
-		try {
-			const response: any = await firstValueFrom(
-				this.customerService.updateCustomer(customer.id, customer)
-			);
-			const updatedCustomer = response?.data ?? response?.customer ?? response;
-			if (isPlatformBrowser(this.platformId)) {
-				localStorage.setItem('customer', JSON.stringify(updatedCustomer));
-			}
-			this.customerSubject.next(updatedCustomer);
-			this.isEditingSubject.next(false);
-			this.showMessage('success', 'Profile updated successfully!');
-		} catch (err: any) {
-			this.showMessage(
-				'error', err.error?.message || 'Failed to update the profile. Please try again.'
-			);
-		} finally {
-			this.isSavingSubject.next(false);
-		}
+	saveProfile(): void {
+		this.saveProfileTrigger.next();
 	}
 	
 	private showMessage(

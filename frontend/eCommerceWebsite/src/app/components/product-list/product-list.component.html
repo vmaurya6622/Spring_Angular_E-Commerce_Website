@@ -1,4 +1,6 @@
 <div class="page">
+	<ng-container *ngIf="(loadProductsEffect$ | async) === null"></ng-container>
+	<ng-container *ngIf="(addToCartEffect$ | async) === null"></ng-container>
 	<nav class="navbar">
 		<div class="logo" (click)="goToHome()" style="cursor: pointer;">
 			<img src="/assets/logo.png" alt="InstaKart Logo">
