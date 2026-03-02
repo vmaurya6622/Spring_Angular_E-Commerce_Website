@@ -98,6 +98,13 @@ export class ProductListComponent implements OnInit {
   }
 
   onViewDetails(product: Product): void {
-    this.router.navigate(['/products', product.id]);
+    if (!product || !Number.isFinite(product.id) || product.id <= 0) {
+      console.error('Invalid product for details navigation:', product);
+      return;
+    }
+
+    this.router.navigate(['/products', product.id]).catch(err => {
+      console.error('Navigation to product details failed:', err);
+    });
   }
 }

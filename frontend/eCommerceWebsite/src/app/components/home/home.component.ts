@@ -210,7 +210,13 @@ export class HomeComponent {
 	}
 
 	viewDetails(bookId: number): void {
-		this.router.navigate(['/products', bookId]);
+		if (!Number.isFinite(bookId) || bookId <= 0) {
+			console.error('Invalid product id for details navigation:', bookId);
+			return;
+		}
+		this.router.navigate(['/products', bookId]).catch(err => {
+			console.error('Navigation to product details failed:', err);
+		});
 	}
 
 	logout(): void {

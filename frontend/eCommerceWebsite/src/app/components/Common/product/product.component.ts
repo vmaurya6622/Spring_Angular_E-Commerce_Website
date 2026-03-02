@@ -19,6 +19,10 @@ export class ProductComponent {
 	}
 
 	onViewDetails(): void {
+		if (!this.product || !Number.isFinite(this.product.id)) {
+			console.error('Invalid product payload for view details:', this.product);
+			return;
+		}
 		this.viewDetails.emit(this.product);
 	}
 
