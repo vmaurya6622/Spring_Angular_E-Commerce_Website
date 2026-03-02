@@ -4,6 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -29,7 +30,7 @@ export class LoginComponent {
     this.errorMessage = '';
   }
 
-  login(): void {
+  async login(): Promise<void> {
     if (!this.username || !this.password) {
       this.errorMessage = 'Please enter username/email and password.';
       return;
@@ -52,31 +53,30 @@ export class LoginComponent {
       password: this.password
     };
 
-    this.http.post('http://localhost:8080/api/customers/login', credentials)
-      .subscribe({
-        next: (response: any) => {
-          console.log('Login response:', response);
-          // Store customer info in both localStorage and sessionStorage (only in browser)
-          if (isPlatformBrowser(this.platformId)) {
-            const customerData = response?.data ?? response?.customer ?? response;
-            if (!customerData?.id) {
-              this.errorMessage = 'Invalid login response from server.';
-              return;
-            }
-            console.log('Storing customer:', customerData);
-            const jsonData = JSON.stringify(customerData);
-            localStorage.setItem('customer', jsonData);
-            sessionStorage.setItem('customer', jsonData);
-            console.log('Stored in localStorage:', localStorage.getItem('customer'));
-            console.log('Stored in sessionStorage:', sessionStorage.getItem('customer'));
-          }
-          this.router.navigate(['/']);
-        },
-        error: (error) => {
-          console.error('Login error:', error);
-          this.errorMessage = error.error.message || 'Invalid username/email or password.';
+    try {
+      const response: any = await firstValueFrom(
+        this.http.post('http://localhost:8080/api/customers/login', credentials)
+      );
+
+      console.log('Login response:', response);
+      if (isPlatformBrowser(this.platformId)) {
+        const customerData = response?.data ?? response?.customer ?? response;
+        if (!customerData?.id) {
+          this.errorMessage = 'Invalid login response from server.';
+          return;
         }
-      });
+        console.log('Storing customer:', customerData);
+        const jsonData = JSON.stringify(customerData);
+        localStorage.setItem('customer', jsonData);
+        sessionStorage.setItem('customer', jsonData);
+        console.log('Stored in localStorage:', localStorage.getItem('customer'));
+        console.log('Stored in sessionStorage:', sessionStorage.getItem('customer'));
+      }
+      this.router.navigate(['/']);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      this.errorMessage = error.error?.message || 'Invalid username/email or password.';
+    }
   }
 
   goToSignup(): void {

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule, } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, map, shareReplay, switchMap, tap, catchError, of } from 'rxjs';
+import { BehaviorSubject, Observable, map, shareReplay, firstValueFrom } from 'rxjs';
 import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 
 interface Customer {
@@ -51,48 +51,12 @@ export class OrdersComponent implements OnInit {
 	);
 
 	expandedOrderId: string | null = null;
-	
-	private loadOrdersTrigger = new BehaviorSubject<void>(undefined);
 
 	constructor(
 		public router: Router,
 		private http: HttpClient,
 		@Inject(PLATFORM_ID) private platformId: Object
-	) {
-		// Load orders trigger pipeline
-		this.loadOrdersTrigger.pipe(
-			switchMap(() => {
-				if (!this.customer) return of(null);
-				
-				const apiUrl = `http://localhost:8080/api/orders/customer/${this.customer.id}`;
-				return this.http.get<any[]>(apiUrl).pipe(
-					tap(rawOrders => {
-						this.ordersSubject.next((rawOrders ?? []).map(order => ({
-							id: order.id?.toString() ?? '',
-							orderDate: order.orderDate ? new Date(order.orderDate) : new Date(),
-							items: (order.items ?? []).map((item: any) => ({
-								id: item.id?.toString() ?? '',
-								productName: item.product?.name ?? item.productName ?? 'Unknown Product',
-								quantity: item.quantity ?? 0,
-								price: item.price ?? 0,
-								subtotal: item.subtotal ?? 0
-							})),
-							subtotal: order.subtotal ?? 0,
-							tax: order.tax ?? 0,
-							total: order.total ?? 0,
-							status: order.status ?? 'pending'
-						})));
-					}),
-					catchError(err => {
-						console.error('Error loading orders:', err);
-						this.ordersSubject.next([]);
-						alert('Failed to load orders. Please try again.');
-						return of(null);
-					})
-				);
-			})
-		).subscribe();
-	}
+	) {}
 
 	ngOnInit(): void {
 		if (!isPlatformBrowser(this.platformId)) return;
@@ -105,7 +69,35 @@ export class OrdersComponent implements OnInit {
 		}
 
 		this.customer = JSON.parse(customerData);
-		this.loadOrdersTrigger.next();
+		void this.loadOrders();
+	}
+
+	private async loadOrders(): Promise<void> {
+		if (!this.customer) return;
+
+		const apiUrl = `http://localhost:8080/api/orders/customer/${this.customer.id}`;
+		try {
+			const rawOrders = await firstValueFrom(this.http.get<any[]>(apiUrl));
+			this.ordersSubject.next((rawOrders ?? []).map(order => ({
+				id: order.id?.toString() ?? '',
+				orderDate: order.orderDate ? new Date(order.orderDate) : new Date(),
+				items: (order.items ?? []).map((item: any) => ({
+					id: item.id?.toString() ?? '',
+					productName: item.product?.name ?? item.productName ?? 'Unknown Product',
+					quantity: item.quantity ?? 0,
+					price: item.price ?? 0,
+					subtotal: item.subtotal ?? 0
+				})),
+				subtotal: order.subtotal ?? 0,
+				tax: order.tax ?? 0,
+				total: order.total ?? 0,
+				status: order.status ?? 'pending'
+			})));
+		} catch (err) {
+			console.error('Error loading orders:', err);
+			this.ordersSubject.next([]);
+			alert('Failed to load orders. Please try again.');
+		}
 	}
 
 	toggleOrderDetails(orderId: string): void {

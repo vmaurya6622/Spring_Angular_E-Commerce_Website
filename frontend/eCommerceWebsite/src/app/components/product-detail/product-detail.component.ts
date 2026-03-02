@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, shareReplay, switchMap, tap, catchError, of, map } from 'rxjs';
+import { BehaviorSubject, Observable, shareReplay, switchMap, tap, catchError, of, firstValueFrom } from 'rxjs';
 import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
@@ -19,7 +19,7 @@ import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 export class ProductDetailComponent implements OnInit {
 	private readonly apiBaseUrl = 'http://localhost:8080';
 	private productSubject = new BehaviorSubject<Product | null>(null);
-	product$: Observable<Product | null> = this.productSubject.asObservable().pipe(shareReplay(1));
+	product$: Observable<Product | null>;
 	private loadingSubject = new BehaviorSubject<boolean>(false);
 	isLoading$: Observable<boolean> = this.loadingSubject.asObservable().pipe(shareReplay(1));
 	private errorMessageSubject = new BehaviorSubject<string>('');
@@ -31,8 +31,6 @@ export class ProductDetailComponent implements OnInit {
 	customerName = '';
 	private isInCartSubject = new BehaviorSubject<boolean>(false);
 	isInCart$: Observable<boolean> = this.isInCartSubject.asObservable().pipe(shareReplay(1));
-	
-	private addToCartTrigger = new BehaviorSubject<void>(undefined);
 
 	constructor(
 		private route: ActivatedRoute,
@@ -41,8 +39,7 @@ export class ProductDetailComponent implements OnInit {
 		private cartService: CartService,
 		@Inject(PLATFORM_ID) private platformId: Object
 	) {
-		// Route param subscription to load product
-		this.route.paramMap.pipe(
+		this.product$ = this.route.paramMap.pipe(
 			tap(() => {
 				this.loadingSubject.next(true);
 				this.errorMessageSubject.next('');
@@ -65,77 +62,34 @@ export class ProductDetailComponent implements OnInit {
 							...product,
 							imageUrl: this.normalizeImageUrl(product.imageUrl)
 						});
-						if (this.isLoggedIn) {
-							this.checkIfInCart(product.id);
+					}),
+					switchMap(product => {
+						if (!this.isLoggedIn) {
+							this.isInCartSubject.next(false);
+							return of(product);
 						}
+						return this.cartService.loadCart().pipe(
+							tap(items => {
+								this.isInCartSubject.next(items.some(item => item.product.id === product.id));
+							}),
+							switchMap(() => of(product)),
+							catchError(err => {
+								console.error('Error checking cart:', err);
+								this.isInCartSubject.next(false);
+								return of(product);
+							})
+						);
 					}),
 					catchError(err => {
 						console.error('Error loading product:', err);
 						this.errorMessageSubject.next('Unable to load product details. Please try again later.');
+						this.productSubject.next(null);
 						return of(null);
 					}),
 					tap(() => this.loadingSubject.next(false))
 				);
 			})
-		).subscribe();
-
-		// Add to cart trigger pipeline
-		this.addToCartTrigger.pipe(
-			switchMap(() => {
-				const product = this.productSubject.value;
-				if (!product || product.stock === 0) return of(null);
-				
-				return this.cartService.loadCart().pipe(
-					switchMap(cartItems => {
-						const existingItem = cartItems.find(
-							item => item.product.id === product.id
-						);
-						const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
-						
-						if (currentQuantityInCart >= product.stock) {
-							alert(
-								`Cannot add more! Only ${product.stock} items available in stock. ` +
-								`You already have ${currentQuantityInCart} in your cart.`
-							);
-							return of(null);
-						}
-						
-						return this.cartService.addItem(product.id, 1).pipe(
-							tap(() => {
-								this.isInCartSubject.next(true);
-								alert(`${product.name} added to cart successfully!`);
-							}),
-							catchError(err => {
-								console.error('Error adding to cart:', err);
-								alert(err.error?.message || 'Failed to add item to cart.');
-								return of(null);
-							})
-						);
-					}),
-					catchError(err => {
-						console.error('Error checking cart:', err);
-						alert('Please login to add items to cart');
-						this.router.navigate(['/login']);
-						return of(null);
-					})
-				);
-			})
-		).subscribe();
-	}
-
-	private checkIfInCart(productId: number): void {
-		if (!this.isLoggedIn) return;
-		this.cartService.loadCart().pipe(
-			tap(items => {
-				this.isInCartSubject.next(items.some(
-					item => item.product.id === productId
-				));
-			}),
-			catchError(err => {
-				console.error('Error checking cart:', err);
-				return of([]);
-			})
-		).subscribe();
+		);
 	}
 
 	ngOnInit(): void {
@@ -149,7 +103,7 @@ export class ProductDetailComponent implements OnInit {
 		}
 	}
 
-	addToCart(): void {
+	async addToCart(): Promise<void> {
 		const product = this.productSubject.value;
 		if (!product || product.stock === 0) return;
 		
@@ -159,7 +113,31 @@ export class ProductDetailComponent implements OnInit {
 			return;
 		}
 
-		this.addToCartTrigger.next();
+		try {
+			const cartItems = await firstValueFrom(this.cartService.loadCart());
+			const existingItem = cartItems.find(item => item.product.id === product.id);
+			const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
+
+			if (currentQuantityInCart >= product.stock) {
+				alert(
+					`Cannot add more! Only ${product.stock} items available in stock. ` +
+					`You already have ${currentQuantityInCart} in your cart.`
+				);
+				return;
+			}
+
+			await firstValueFrom(this.cartService.addItem(product.id, 1));
+			this.isInCartSubject.next(true);
+			alert(`${product.name} added to cart successfully!`);
+		} catch (err: any) {
+			console.error('Error adding to cart:', err);
+			if (err.status === 401 || err.status === 403) {
+				alert('Please login to add items to cart');
+				this.router.navigate(['/login']);
+				return;
+			}
+			alert(err.error?.message || 'Failed to add item to cart.');
+		}
 	}
 
 	goToHome(): void {

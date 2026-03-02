@@ -1,4 +1,4 @@
-import { BehaviorSubject,of, catchError, firstValueFrom, tap } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -15,9 +15,12 @@ import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 })
 export class SignupComponent {
 	signupForm: FormGroup;
-	errorMessage$ = new BehaviorSubject<string>('');
-	loading$ = new BehaviorSubject<boolean>(false);
-	successMessage$ = new BehaviorSubject<string>('');
+	private readonly errorMessageSubject = new BehaviorSubject<string>('');
+	readonly errorMessage$: Observable<string> = this.errorMessageSubject.asObservable();
+	private readonly loadingSubject = new BehaviorSubject<boolean>(false);
+	readonly loading$: Observable<boolean> = this.loadingSubject.asObservable();
+	private readonly successMessageSubject = new BehaviorSubject<string>('');
+	readonly successMessage$: Observable<string> = this.successMessageSubject.asObservable();
 
 	constructor(
 		private fb: FormBuilder,
@@ -37,25 +40,27 @@ export class SignupComponent {
 		});
 	}
 
-	onSubmit(): void {
+	async onSubmit(): Promise<void> {
 		if (this.signupForm.invalid) {
-			this.errorMessage$.next('Please fill all fields correctly.');
+			this.errorMessageSubject.next('Please fill all fields correctly.');
 			return;
 		}
-		this.loading$.next(true);
-		this.errorMessage$.next('');
-		this.http.post('http://localhost:8080/api/customers/signup', this.signupForm.value).pipe(
-			tap(() => {
-				this.successMessage$.next('Signup successful! Redirecting to login...');
-				this.signupForm.reset();
-				setTimeout(() => {
-					this.router.navigate(['/login']);
-				}, 1000);
-
-			}), catchError((error) => {
-				this.errorMessage$.next(error.error?.message || 'Signup failed. Please try again.');
-				return of(null);
-			}), tap(() => this.loading$.next(false))).subscribe();
+		this.loadingSubject.next(true);
+		this.errorMessageSubject.next('');
+		try {
+			await firstValueFrom(
+				this.http.post('http://localhost:8080/api/customers/signup', this.signupForm.value)
+			);
+			this.successMessageSubject.next('Signup successful! Redirecting to login...');
+			this.signupForm.reset();
+			setTimeout(() => {
+				this.router.navigate(['/login']);
+			}, 1000);
+		} catch (error: any) {
+			this.errorMessageSubject.next(error.error?.message || 'Signup failed. Please try again.');
+		} finally {
+			this.loadingSubject.next(false);
+		}
 	}
 
 	get f() {

@@ -4,8 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CustomerService, Customer } from '../../services/customer.service';
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import {  catchError, of ,tap} from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 
 @Component({
@@ -16,10 +15,14 @@ import { CommonFooterComponent } from '../Common/CommonFooter/CommonFooter';
 	styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
-	customer$ = new BehaviorSubject<Customer | null>(null);
-	isEditing$ = new BehaviorSubject<boolean>(false);
-	isSaving$ = new BehaviorSubject<boolean>(false);
-	messageBox$ = new BehaviorSubject<{ type: 'success' | 'error', message: string } | null>(null);
+	private readonly customerSubject = new BehaviorSubject<Customer | null>(null);
+	readonly customer$: Observable<Customer | null> = this.customerSubject.asObservable();
+	private readonly isEditingSubject = new BehaviorSubject<boolean>(false);
+	readonly isEditing$: Observable<boolean> = this.isEditingSubject.asObservable();
+	private readonly isSavingSubject = new BehaviorSubject<boolean>(false);
+	readonly isSaving$: Observable<boolean> = this.isSavingSubject.asObservable();
+	private readonly messageBoxSubject = new BehaviorSubject<{ type: 'success' | 'error', message: string } | null>(null);
+	readonly messageBox$: Observable<{ type: 'success' | 'error', message: string } | null> = this.messageBoxSubject.asObservable();
 
 	constructor(
 		public router: Router,
@@ -36,47 +39,49 @@ export class ProfileComponent implements OnInit {
 		let customerData = localStorage.getItem('customer') || sessionStorage.getItem('customer');
 		if (customerData) {
 			try {
-				this.customer$.next(JSON.parse(customerData));
+				this.customerSubject.next(JSON.parse(customerData));
 
 			} catch {
-				this.customer$.next(null);
+				this.customerSubject.next(null);
 			}
 		} else {
-			this.customer$.next(null);
+			this.customerSubject.next(null);
 		}
 	}
 
 	startEdit(): void {
-		this.isEditing$.next(true);
+		this.isEditingSubject.next(true);
 	}
 
 	cancelEdit(): void {
-		this.isEditing$.next(false);
-		this.messageBox$.next(null);
+		this.isEditingSubject.next(false);
+		this.messageBoxSubject.next(null);
 		this.loadCustomerProfile();
 	}
 
-	saveProfile():void{
-		const customer = this.customer$.value;
+	async saveProfile(): Promise<void> {
+		const customer = this.customerSubject.value;
 		if(!customer)return;
-		this.isSaving$.next(true);
-		this.messageBox$.next(null);
-		this.customerService.updateCustomer(customer.id, customer).pipe(
-			tap((response:any)=>{
-				const updatedCustomer = response?.data ?? response?.customer ?? response;
-				if(isPlatformBrowser(this.platformId)) {
-					localStorage.setItem('customer',JSON.stringify(updatedCustomer));
-				}
-				this.customer$.next(updatedCustomer);
-				this.isEditing$.next(false);
-				this.showMessage('success','Profile updated successfully!');
-			}),
-			catchError((err)=>{
-				this.showMessage(
-					'error',err.error?.message || 'Failed to update the profile. Please try again.'
-				);
-				return of(null);
-			}),tap(() => this.isSaving$.next(false))).subscribe();
+		this.isSavingSubject.next(true);
+		this.messageBoxSubject.next(null);
+		try {
+			const response: any = await firstValueFrom(
+				this.customerService.updateCustomer(customer.id, customer)
+			);
+			const updatedCustomer = response?.data ?? response?.customer ?? response;
+			if (isPlatformBrowser(this.platformId)) {
+				localStorage.setItem('customer', JSON.stringify(updatedCustomer));
+			}
+			this.customerSubject.next(updatedCustomer);
+			this.isEditingSubject.next(false);
+			this.showMessage('success', 'Profile updated successfully!');
+		} catch (err: any) {
+			this.showMessage(
+				'error', err.error?.message || 'Failed to update the profile. Please try again.'
+			);
+		} finally {
+			this.isSavingSubject.next(false);
+		}
 	}
 	
 	private showMessage(
@@ -84,10 +89,10 @@ export class ProfileComponent implements OnInit {
 		message: string,
 		duration = 1000
 	): void {
-		this.messageBox$.next({ type, message });
+		this.messageBoxSubject.next({ type, message });
 
 		setTimeout(() => {
-			this.messageBox$.next(null);
+			this.messageBoxSubject.next(null);
 		}, duration);
 	}
 	logout(): void {
